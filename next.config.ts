@@ -5,16 +5,16 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   
   // Ensure nodemailer works in serverless environment
-  experimental: {
-    serverComponentsExternalPackages: ['nodemailer']
-  },
+  serverExternalPackages: ['nodemailer'],
   
   images: {
     unoptimized: false, 
   },
   
+  // Enable compression
   compress: true,
   
+  // Redirect trailing slashes
   trailingSlash: false,
   
   // Headers for better security
