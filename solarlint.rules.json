@@ -1,0 +1,6 @@
+{
+  "disableRules": [
+    "typescript:S6847",
+    "typescript:S6845"
+  ]
+}

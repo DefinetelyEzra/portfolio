@@ -3,6 +3,34 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Light theme colors */
+  --window-bg: rgba(255, 255, 255, 0.95);
+  --window-border: rgba(0, 0, 0, 0.1);
+  --widget-bg: rgba(255, 255, 255, 0.8);
+  --widget-border: rgba(255, 255, 255, 0.2);
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  
+  /* Dark theme colors */
+  --window-bg: rgba(17, 24, 39, 0.95);
+  --window-border: rgba(75, 85, 99, 0.5);
+  --widget-bg: rgba(17, 24, 39, 0.8);
+  --widget-border: rgba(75, 85, 99, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --window-bg: rgba(17, 24, 39, 0.95);
+    --window-border: rgba(75, 85, 99, 0.5);
+    --widget-bg: rgba(17, 24, 39, 0.8);
+    --widget-border: rgba(75, 85, 99, 0.3);
+  }
 }
 
 @theme inline {
@@ -13,9 +41,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --window-bg: rgba(17, 24, 39, 0.95);
+    --window-border: rgba(75, 85, 99, 0.5);
+    --widget-bg: rgba(17, 24, 39, 0.8);
+    --widget-border: rgba(75, 85, 99, 0.3);
   }
 }
 
@@ -23,4 +55,263 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Boot Screen Animations */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Custom scrollbar for a more polished look */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Minimize Animation Styles */
+@keyframes genie-minimize {
+  0% {
+    transform: scale(1) perspective(1000px) rotateX(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8) perspective(1000px) rotateX(-5deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.1) perspective(1000px) rotateX(-15deg);
+    opacity: 0.3;
+  }
+}
+
+@keyframes genie-restore {
+  0% {
+    transform: scale(0.1) perspective(1000px) rotateX(-15deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(0.8) perspective(1000px) rotateX(-5deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) perspective(1000px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+/* Dock minimized window indicators */
+.minimized-window-preview {
+  background: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 0.9) 0%,
+    rgba(31, 41, 55, 0.9) 100%
+  );
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.minimized-window-preview:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 1) 0%,
+    rgba(31, 41, 55, 1) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced dock hover effects */
+.dock-container {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dock-separator {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+}
+
+/* Minimize animation performance optimizations */
+.minimize-animation {
+  will-change: transform, opacity, width, height;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Widget Animations */
+@keyframes widget-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes widget-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* Widget-specific styles */
+.widget-container {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--widget-border);
+  background: var(--widget-bg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.widget-container:hover {
+  background: color-mix(in srgb, var(--widget-bg) 90%, white);
+  border-color: color-mix(in srgb, var(--widget-border) 70%, white);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Widget settings panel */
+.widget-settings {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: var(--window-bg);
+  border: 1px solid var(--window-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .widget-container {
+    transition: none;
+  }
+  
+  .clock-hand {
+    transition: none;
+  }
+  
+  .clock-second-hand {
+    animation: none;
+  }
+  
+  .widget-dragging {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .widget-container {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+  
+  .widget-settings {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+}
+
+/* Quote Generator Animations */
+@keyframes quote-flip {
+  0% {
+    transform: rotateY(-90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes quote-sparkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+/* Clock hand animations */
+.clock-hand {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center bottom;
+}
+
+.clock-second-hand {
+  animation: clock-tick 1s infinite linear;
+  transform-origin: center bottom;
+}
+
+@keyframes clock-tick {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(6deg);
+  }
+}
+
+.quote-generator .quote-content {
+  perspective: 1000px;
+}
+
+.quote-sparkle {
+  animation: quote-sparkle 2s ease-in-out infinite;
+}
+
+/* Quote category indicators */
+.quote-category-tech {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.quote-category-motivation {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.quote-category-personal {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.quote-category-easter-egg {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  animation: quote-sparkle 3s ease-in-out infinite;
 }
