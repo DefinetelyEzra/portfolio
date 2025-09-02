@@ -208,7 +208,7 @@ export default function ContactApp() {
             message: '',
             priority: 'medium'
           });
-        }, 5000); 
+        }, 5000);
       } else {
         // Handle error
         alert(result.error || 'Failed to send message. Please try again.');
@@ -387,6 +387,12 @@ export default function ContactApp() {
                     rows={6}
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
                     placeholder="Tell me about your project, opportunity, or just say hello..."
+                    onKeyDown={(e) => {
+                      // Ensure spacebar and other key events are not prevented
+                      if (e.key === ' ') {
+                        e.stopPropagation();
+                      }
+                    }}
                   />
                   <div className={`text-right text-sm ${styles.text.muted} mt-1`}>
                     {form.message.length} characters

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useDesktopStore } from '@/store/desktopStore';
 import { DOCK_APPS } from '@/utils/constants';
@@ -12,48 +12,38 @@ export default function Dock() {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const dockRef = useRef<HTMLDivElement>(null);
 
-    const getActiveApps = () => {
-        return windows.filter(w => !w.isMinimized).map(w => w.appId);
-    };
+    const { activeApps, minimizedWindows } = useMemo(() => {
+        const active = new Set(windows.filter(w => !w.isMinimized).map(w => w.appId));
+        const minimized = windows.filter(w => w.isMinimized);
+        return { activeApps: active, minimizedWindows: minimized };
+    }, [windows]);
 
-    const calculateScale = (index: number) => {
+    const calculateScale = useCallback((index: number) => {
         if (hoveredIndex === null) return 1;
-
         const distance = Math.abs(index - hoveredIndex);
-
         if (distance === 0) return 1.6;
         if (distance === 1) return 1.3;
         if (distance === 2) return 1.1;
-
         return 1;
-    };
+    }, [hoveredIndex]);
 
-    const calculateTranslateY = (index: number) => {
+    const calculateTranslateY = useCallback((index: number) => {
         if (hoveredIndex === null) return 0;
-
         const distance = Math.abs(index - hoveredIndex);
-
         if (distance === 0) return -12;
         if (distance === 1) return -8;
         if (distance === 2) return -4;
-
         return 0;
-    };
+    }, [hoveredIndex]);
 
-    const activeApps = getActiveApps();
-
-    const getMinimizedWindows = () => {
-        return windows.filter(w => w.isMinimized);
-    };
-
-    const handleIconClick = (appId: string) => {
+    const handleIconClick = useCallback((appId: string) => {
         const minimizedWindow = windows.find(w => w.appId === appId && w.isMinimized);
         if (minimizedWindow) {
             restoreWindow(minimizedWindow.id);
         } else {
             openWindow(appId);
         }
-    };
+    }, [windows, restoreWindow, openWindow]);
 
     return (
         <motion.div
@@ -75,21 +65,18 @@ export default function Dock() {
                         }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         onHoverStart={() => setHoveredIndex(index)}
-                        data-dock-icon={app.id} 
+                        data-dock-icon={app.id}
                     >
                         <DockIcon
                             app={app}
-                            isActive={activeApps.includes(app.id)}
+                            isActive={activeApps.has(app.id)} // Changed from includes to has
                             onClick={() => handleIconClick(app.id)}
-                            onContextMenu={(e) => {
-                                e.preventDefault();
-                            }}
+                            onContextMenu={(e) => e.preventDefault()}
                         />
                     </motion.div>
                 ))}
 
-                {/* Minimized Windows Section */}
-                {getMinimizedWindows().map((window) => {
+                {minimizedWindows.map((window) => {
                     const app = DOCK_APPS.find(a => a.id === window.appId);
                     if (!app) return null;
 
@@ -102,8 +89,6 @@ export default function Dock() {
                     );
                 })}
             </div>
-
-            {/* Dock Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent rounded-2xl blur-xl -z-10" />
         </motion.div>
     );

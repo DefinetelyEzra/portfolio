@@ -60,7 +60,6 @@ export function useDesktop(): DesktopHookReturn {
 
       setViewport(newViewport);
       setMobile(isMobile);
-      // Sync theme with system preference if needed
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       useDesktopStore.getState().setSystemTheme(isDark ? 'dark' : 'light');
     } catch (error) {
@@ -203,23 +202,35 @@ export function useDesktop(): DesktopHookReturn {
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let rafId: number;
 
     const debouncedResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        updateViewport();
-      }, 100); // 100ms debounce
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(updateViewport, 16); // ~60fps
+      });
     };
 
     if (typeof window !== 'undefined') {
-      window.addEventListener('resize', debouncedResize);
+      // Remove the duplicate resize listener setup
+      window.addEventListener('resize', debouncedResize, { passive: true });
+      window.addEventListener('online', handleOnline, { passive: true });
+      window.addEventListener('offline', handleOffline, { passive: true });
+      document.addEventListener('fullscreenchange', handleFullscreenChange, { passive: true });
+      document.addEventListener('visibilitychange', handleVisibilityChange, { passive: true });
 
       return () => {
         clearTimeout(timeoutId);
+        cancelAnimationFrame(rafId);
         window.removeEventListener('resize', debouncedResize);
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
     }
-  }, [updateViewport]);
+  }, [handleFullscreenChange, handleOffline, handleOnline, handleVisibilityChange, updateViewport]);
 
   return {
     viewport,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useDesktopStore } from '@/store/desktopStore';
 import { DOCK_APPS } from '@/utils/constants';
@@ -36,27 +36,58 @@ export default function Desktop() {
     return () => clearTimeout(timer);
   }, [addNotification]);
 
+  // Memoize sorted visible windows to prevent unnecessary re-sorts
+  const sortedVisibleWindows = useMemo(() =>
+    windows
+      .filter(w => w.isVisible)
+      .sort((a, b) => a.zIndex - b.zIndex),
+    [windows]
+  );
+
+  // Memoize window event handlers to prevent unnecessary re-renders
+  const handleWindowClose = useCallback((windowId: string) => {
+    closeWindow(windowId);
+  }, [closeWindow]);
+
+  const handleWindowMinimize = useCallback((windowId: string) => {
+    minimizeWindow(windowId);
+  }, [minimizeWindow]);
+
+  const handleWindowMaximize = useCallback((windowId: string) => {
+    maximizeWindow(windowId);
+  }, [maximizeWindow]);
+
+  const handleWindowMove = useCallback((windowId: string, position: { x: number; y: number }) => {
+    moveWindow(windowId, position);
+  }, [moveWindow]);
+
+  const handleWindowResize = useCallback((windowId: string, size: { width: number; height: number }) => {
+    resizeWindow(windowId, size);
+  }, [resizeWindow]);
+
+  const handleWindowFocus = useCallback((windowId: string) => {
+    focusWindow(windowId);
+  }, [focusWindow]);
+
   // Handle click outside windows to unfocus
-  const handleDesktopClick = (e: React.MouseEvent) => {
+  const handleDesktopClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       // Clicked on desktop background
       // Could add desktop context menu here
     }
-  };
+  }, []);
 
   // Handle keyboard events for accessibility
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleDesktopClick(e as unknown as React.MouseEvent);
     }
-  };
+  }, [handleDesktopClick]);
 
   return (
-
     <main className="fixed inset-0 overflow-hidden">
-      {/* Use a proper interactive element for desktop */}
-      <main
+      <div
         className="absolute inset-0 select-none cursor-default"
         aria-label="Desktop workspace"
         onClick={handleDesktopClick}
@@ -68,27 +99,24 @@ export default function Desktop() {
 
         {/* Windows */}
         <AnimatePresence mode="sync">
-          {windows
-            .filter(w => w.isVisible)
-            .sort((a, b) => a.zIndex - b.zIndex)
-            .map((window) => {
-              const app = DOCK_APPS.find(a => a.id === window.appId);
-              if (!app) return null;
+          {sortedVisibleWindows.map((window) => {
+            const app = DOCK_APPS.find(a => a.id === window.appId);
+            if (!app) return null;
 
-              return (
-                <Window
-                  key={window.id}
-                  window={window}
-                  app={app}
-                  onClose={() => closeWindow(window.id)}
-                  onMinimize={() => minimizeWindow(window.id)}
-                  onMaximize={() => maximizeWindow(window.id)}
-                  onMove={(position) => moveWindow(window.id, position)}
-                  onResize={(size) => resizeWindow(window.id, size)}
-                  onFocus={() => focusWindow(window.id)}
-                />
-              );
-            })}
+            return (
+              <Window
+                key={window.id}
+                window={window}
+                app={app}
+                onClose={() => handleWindowClose(window.id)}
+                onMinimize={() => handleWindowMinimize(window.id)}
+                onMaximize={() => handleWindowMaximize(window.id)}
+                onMove={(position) => handleWindowMove(window.id, position)}
+                onResize={(size) => handleWindowResize(window.id, size)}
+                onFocus={() => handleWindowFocus(window.id)}
+              />
+            );
+          })}
         </AnimatePresence>
 
         {/* Desktop Widgets */}
@@ -99,7 +127,7 @@ export default function Desktop() {
 
         {/* Notifications */}
         <Notifications />
-      </main>
+      </div>
     </main>
   );
 }

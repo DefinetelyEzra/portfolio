@@ -1,42 +1,56 @@
 'use client';
 
 import { useDesktopStore } from '@/store/desktopStore';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ALL_WALLPAPERS, getNextWallpaper, type WallpaperData } from '@/utils/wallpaperUtils';
 import { Play, Pause, SkipForward, SkipBack, Shuffle } from 'lucide-react';
 
 const CYCLE_INTERVALS = {
   slow: 600000,    // 10 minutes
   medium: 300000,  // 5 minutes
-  fast: 60000,    // 1 minute
+  fast: 60000,     // 1 minute
 } as const;
 
 type CycleSpeed = keyof typeof CYCLE_INTERVALS;
 
 export default function Wallpaper() {
   const { settings, updateSettings } = useDesktopStore();
+  const initialWallpaper = ALL_WALLPAPERS.find((w: WallpaperData) => w.path === settings.wallpaper) || ALL_WALLPAPERS[0];
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [cycleSpeed, setCycleSpeed] = useState<CycleSpeed>('medium');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const [currentWallpaper, setCurrentWallpaper] = useState<WallpaperData | null>(null);
+  const [currentWallpaper, setCurrentWallpaper] = useState<WallpaperData>(initialWallpaper);
 
-  // Find current wallpaper data
-  useEffect(() => {
-    const wallpaper = ALL_WALLPAPERS.find((w: WallpaperData) => w.path === settings.wallpaper);
-    setCurrentWallpaper(wallpaper || ALL_WALLPAPERS[0]);
-  }, [settings.wallpaper]);
+  const getWallpaperStyle = useMemo(() => {
+    const wallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper) || initialWallpaper;
 
-  // Smooth wallpaper transition
+    switch (wallpaper.type) {
+      case 'gradient':
+        return { background: wallpaper.path };
+      case 'animated':
+        return { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
+      case 'static':
+      default:
+        return {
+          backgroundImage: `url(${wallpaper.path})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        };
+    }
+  }, [settings.wallpaper, initialWallpaper]);
+
+  // Debounced wallpaper change
   const changeWallpaper = useCallback((newWallpaper: WallpaperData) => {
+    if (isTransitioning) return; // Prevent rapid transitions
     setIsTransitioning(true);
-
     setTimeout(() => {
       updateSettings({ wallpaper: newWallpaper.path });
       setCurrentWallpaper(newWallpaper);
       setIsTransitioning(false);
     }, 200);
-  }, [updateSettings]);
+  }, [updateSettings, isTransitioning]);
 
   // Auto-cycle functionality
   useEffect(() => {
@@ -50,68 +64,44 @@ export default function Wallpaper() {
     return () => clearInterval(interval);
   }, [isAutoPlaying, cycleSpeed, settings.wallpaper, changeWallpaper]);
 
-  // Manual navigation
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     const nextWallpaper = getNextWallpaper(settings.wallpaper);
     changeWallpaper(nextWallpaper);
-  };
+  }, [settings.wallpaper, changeWallpaper]);
 
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     const currentIndex = ALL_WALLPAPERS.findIndex((w: WallpaperData) => w.path === settings.wallpaper);
     const prevIndex = currentIndex === 0 ? ALL_WALLPAPERS.length - 1 : currentIndex - 1;
     changeWallpaper(ALL_WALLPAPERS[prevIndex]);
-  };
+  }, [settings.wallpaper, changeWallpaper]);
 
-  const goToRandom = () => {
+  const goToRandom = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * ALL_WALLPAPERS.length);
     changeWallpaper(ALL_WALLPAPERS[randomIndex]);
-  };
-
-  const getWallpaperStyle = () => {
-    const currentWallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper);
-
-    if (!currentWallpaper) {
-      return { backgroundImage: `url(${settings.wallpaper})` };
-    }
-
-    switch (currentWallpaper.type) {
-      case 'gradient':
-        return { background: currentWallpaper.path };
-      case 'animated':
-        // Handle animated wallpapers
-        return { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
-      case 'static':
-      default:
-        return {
-          backgroundImage: `url(${currentWallpaper.path})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        };
-    }
-  };
+  }, [changeWallpaper]);
 
   return (
     <>
       {/* Main wallpaper */}
       <div
-        className={`fixed inset-0 -z-10 transition-opacity duration-300 ${isTransitioning ? 'opacity-90' : 'opacity-100'
-          }`}
-        style={getWallpaperStyle()}
+        className={`fixed inset-0 -z-10 transition-opacity duration-300 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
+        style={getWallpaperStyle}
       >
         <div className="absolute inset-0 bg-black/5" />
       </div>
 
-      {/* Preloader for next wallpaper */}
-      <div
-        className="fixed inset-0 -z-20"
-        style={{
-          backgroundImage: `url(${getNextWallpaper(settings.wallpaper).path})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+      {/* Preloader for next wallpaper (only when auto-playing) */}
+      {isAutoPlaying && (
+        <div
+          className="fixed inset-0 -z-20"
+          style={{
+            backgroundImage: `url(${getNextWallpaper(settings.wallpaper).path})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+      )}
 
       {/* Control panel */}
       <div
@@ -127,8 +117,7 @@ export default function Wallpaper() {
         </div>
 
         {/* Expanded controls */}
-        <div className={`absolute bottom-0 right-0 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
-          }`}>
+        <div className={`absolute bottom-0 right-0 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
           <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-4 min-w-[280px]">
             {/* Current wallpaper info */}
             <div className="mb-3">
@@ -200,12 +189,10 @@ export default function Wallpaper() {
             {isAutoPlaying && (
               <div className="w-full bg-white/20 rounded-full h-1">
                 <div
-                  className="bg-white h-1 rounded-full progress-bar"
+                  className="bg-white h-1 rounded-full"
                   style={{
-                    animationDuration: `${CYCLE_INTERVALS[cycleSpeed]}ms`,
-                    animationName: 'progress',
-                    animationTimingFunction: 'linear',
-                    animationIterationCount: 'infinite'
+                    width: '0%',
+                    animation: `progress ${CYCLE_INTERVALS[cycleSpeed]}ms linear infinite`
                   }}
                 />
               </div>
@@ -219,9 +206,6 @@ export default function Wallpaper() {
         @keyframes progress {
           from { width: 0%; }
           to { width: 100%; }
-        }
-        .progress-bar {
-          width: 0%;
         }
       `}</style>
     </>

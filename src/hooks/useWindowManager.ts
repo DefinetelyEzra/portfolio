@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useDesktopStore } from '@/store/desktopStore';
 
 interface UseWindowManagerOptions {
@@ -43,101 +43,97 @@ export function useWindowManager({
   const { windows, focusWindow, moveWindow, resizeWindow } = useDesktopStore();
   const dragStateRef = useRef<DragState | null>(null);
   const resizeStateRef = useRef<ResizeState | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Get current window state
-  const currentWindow = windows.find(w => w.id === windowId);
+  // Memoized current window
+  const currentWindow = useMemo(() =>
+    windows.find(w => w.id === windowId),
+    [windows, windowId]
+  );
 
-  // Calculate window constraints
-  const getConstraints = useCallback((): WindowConstraints => {
-    if (typeof window === 'undefined') {
-      return { minX: 0, minY: 0, maxX: 1920, maxY: 1000 };
-    }
+  // Memoized constraints with viewport resize listener
+  const [viewport, setViewport] = useState({ width: typeof window !== 'undefined' ? window.innerWidth : 1920, height: typeof window !== 'undefined' ? window.innerHeight : 1080 });
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const getConstraints = useMemo((): WindowConstraints => {
     const dockHeight = 80;
     const headerHeight = 52;
-
-    // Allow window to be dragged slightly off-screen but keep header visible
     const minVisibleWidth = 100;
     const minVisibleHeight = headerHeight;
 
     return {
       minX: -(currentWindow?.size.width || 300) + minVisibleWidth,
       minY: 0,
-      maxX: viewportWidth - minVisibleWidth,
-      maxY: viewportHeight - dockHeight - minVisibleHeight,
+      maxX: viewport.width - minVisibleWidth,
+      maxY: viewport.height - dockHeight - minVisibleHeight,
     };
-  }, [currentWindow?.size]);
+  }, [currentWindow?.size, viewport.width, viewport.height]);
 
   // Handle window focus
   const handleFocus = useCallback(() => {
-    try {
-      focusWindow(windowId);
-      onFocus?.();
-    } catch (error) {
-      console.error('Error focusing window:', error);
-    }
+    focusWindow(windowId);
+    onFocus?.();
   }, [windowId, focusWindow, onFocus]);
 
   // Handle drag start
   const handleDragStart = useCallback((event: MouseEvent | TouchEvent) => {
     if (!currentWindow || currentWindow.isMaximized) return;
 
-    try {
-      const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-      const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
 
-      dragStateRef.current = {
-        startX: clientX,
-        startY: clientY,
-        startWindowX: currentWindow.position.x,
-        startWindowY: currentWindow.position.y,
-      };
+    dragStateRef.current = {
+      startX: clientX,
+      startY: clientY,
+      startWindowX: currentWindow.position.x,
+      startWindowY: currentWindow.position.y,
+    };
 
-      handleFocus();
-    } catch (error) {
-      console.error('Error starting drag:', error);
-    }
+    handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Handle drag
+  // Handle drag with debounced updates
   const handleDrag = useCallback((event: MouseEvent | TouchEvent) => {
     if (!dragStateRef.current || !currentWindow || currentWindow.isMaximized) return;
 
-    try {
-      const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-      const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
 
-      const deltaX = clientX - dragStateRef.current.startX;
-      const deltaY = clientY - dragStateRef.current.startY;
+    const deltaX = clientX - dragStateRef.current.startX;
+    const deltaY = clientY - dragStateRef.current.startY;
 
-      const newX = dragStateRef.current.startWindowX + deltaX;
-      const newY = dragStateRef.current.startWindowY + deltaY;
+    const newX = dragStateRef.current.startWindowX + deltaX;
+    const newY = dragStateRef.current.startWindowY + deltaY;
 
-      const constraints = getConstraints();
-      const constrainedX = Math.max(constraints.minX, Math.min(constraints.maxX, newX));
-      const constrainedY = Math.max(constraints.minY, Math.min(constraints.maxY, newY));
+    const constraints = getConstraints;
+    const constrainedX = Math.max(constraints.minX, Math.min(constraints.maxX, newX));
+    const constrainedY = Math.max(constraints.minY, Math.min(constraints.maxY, newY));
 
-      const newPosition = { x: constrainedX, y: constrainedY };
+    const newPosition = { x: constrainedX, y: constrainedY };
 
-      // Only update if position actually changed
-      if (constrainedX !== currentWindow.position.x || constrainedY !== currentWindow.position.y) {
+    if (constrainedX !== currentWindow.position.x || constrainedY !== currentWindow.position.y) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
         moveWindow(windowId, newPosition);
         onMove?.(newPosition);
-      }
-    } catch (error) {
-      console.error('Error during drag:', error);
+      }, 16); // ~60fps
     }
   }, [currentWindow, windowId, moveWindow, onMove, getConstraints]);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
-    try {
-      dragStateRef.current = null;
-    } catch (error) {
-      console.error('Error ending drag:', error);
-    }
+    dragStateRef.current = null;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
   // Handle resize start
@@ -147,134 +143,104 @@ export function useWindowManager({
   ) => {
     if (!currentWindow) return;
 
-    try {
-      event.preventDefault();
-      event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
 
-      resizeStateRef.current = {
-        startX: event.clientX,
-        startY: event.clientY,
-        startWidth: currentWindow.size.width,
-        startHeight: currentWindow.size.height,
-        startWindowX: currentWindow.position.x,
-        startWindowY: currentWindow.position.y,
-        direction,
-      };
+    resizeStateRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: currentWindow.size.width,
+      startHeight: currentWindow.size.height,
+      startWindowX: currentWindow.position.x,
+      startWindowY: currentWindow.position.y,
+      direction,
+    };
 
-      handleFocus();
-    } catch (error) {
-      console.error('Error starting resize:', error);
-    }
+    handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Handle resize
+  // Handle resize with debounced updates
   const handleResize = useCallback((event: MouseEvent) => {
     if (!resizeStateRef.current || !currentWindow) return;
 
-    try {
-      const deltaX = event.clientX - resizeStateRef.current.startX;
-      const deltaY = event.clientY - resizeStateRef.current.startY;
+    const deltaX = event.clientX - resizeStateRef.current.startX;
+    const deltaY = event.clientY - resizeStateRef.current.startY;
 
-      let newWidth = resizeStateRef.current.startWidth;
-      let newHeight = resizeStateRef.current.startHeight;
-      let newX = resizeStateRef.current.startWindowX;
-      let newY = resizeStateRef.current.startWindowY;
+    let newWidth = resizeStateRef.current.startWidth;
+    let newHeight = resizeStateRef.current.startHeight;
+    let newX = resizeStateRef.current.startWindowX;
+    let newY = resizeStateRef.current.startWindowY;
 
-      const { direction } = resizeStateRef.current;
+    const { direction } = resizeStateRef.current;
 
-      // Calculate new dimensions and position based on resize direction
-      if (direction.includes('e')) {
-        newWidth = Math.max(300, resizeStateRef.current.startWidth + deltaX);
+    if (direction.includes('e')) {
+      newWidth = Math.max(300, resizeStateRef.current.startWidth + deltaX);
+    }
+    if (direction.includes('w')) {
+      const widthDelta = -deltaX;
+      newWidth = Math.max(300, resizeStateRef.current.startWidth + widthDelta);
+      if (newWidth > 300) {
+        newX = resizeStateRef.current.startWindowX - widthDelta;
       }
-      if (direction.includes('w')) {
-        const widthDelta = -deltaX;
-        newWidth = Math.max(300, resizeStateRef.current.startWidth + widthDelta);
-        if (newWidth > 300) {
-          newX = resizeStateRef.current.startWindowX - widthDelta;
-        }
+    }
+    if (direction.includes('s')) {
+      newHeight = Math.max(200, resizeStateRef.current.startHeight + deltaY);
+    }
+    if (direction.includes('n')) {
+      const heightDelta = -deltaY;
+      newHeight = Math.max(200, resizeStateRef.current.startHeight + heightDelta);
+      if (newHeight > 200) {
+        newY = resizeStateRef.current.startWindowY - heightDelta;
       }
-      if (direction.includes('s')) {
-        newHeight = Math.max(200, resizeStateRef.current.startHeight + deltaY);
-      }
-      if (direction.includes('n')) {
-        const heightDelta = -deltaY;
-        newHeight = Math.max(200, resizeStateRef.current.startHeight + heightDelta);
-        if (newHeight > 200) {
-          newY = resizeStateRef.current.startWindowY - heightDelta;
-        }
-      }
+    }
 
-      // Apply viewport constraints
-      const maxWidth = (typeof window !== 'undefined' ? window.innerWidth : 1920) - newX;
-      const maxHeight = (typeof window !== 'undefined' ? window.innerHeight : 1080) - newY - 80;
+    const maxWidth = viewport.width - newX;
+    const maxHeight = viewport.height - newY - 80;
 
-      newWidth = Math.min(newWidth, Math.max(300, maxWidth));
-      newHeight = Math.min(newHeight, Math.max(200, maxHeight));
+    newWidth = Math.min(newWidth, Math.max(300, maxWidth));
+    newHeight = Math.min(newHeight, Math.max(200, maxHeight));
 
-      const newSize = { width: newWidth, height: newHeight };
-      const newPosition = { x: newX, y: newY };
+    const newSize = { width: newWidth, height: newHeight };
+    const newPosition = { x: newX, y: newY };
 
-      // Update window size and position
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
       resizeWindow(windowId, newSize);
       if (newX !== currentWindow.position.x || newY !== currentWindow.position.y) {
         moveWindow(windowId, newPosition);
         onMove?.(newPosition);
       }
       onResize?.(newSize);
-    } catch (error) {
-      console.error('Error during resize:', error);
-    }
-  }, [currentWindow, windowId, resizeWindow, moveWindow, onMove, onResize]);
+    }, 16); // ~60fps
+  }, [currentWindow, windowId, resizeWindow, moveWindow, onMove, onResize, viewport]);
 
   // Handle resize end
   const handleResizeEnd = useCallback(() => {
-    try {
-      resizeStateRef.current = null;
-    } catch (error) {
-      console.error('Error ending resize:', error);
-    }
+    resizeStateRef.current = null;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
-  // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((event: KeyboardEvent): string | null => {
+  // Handle keyboard shortcuts with explicit return type
+  const handleKeyDown = useCallback((event: KeyboardEvent): 'close' | 'minimize' | 'maximize' | null => {
     if (!currentWindow) return null;
 
-    try {
-      // Cmd/Ctrl + W to close window
-      if ((event.metaKey || event.ctrlKey) && event.key === 'w') {
-        event.preventDefault();
-        return 'close';
-      }
+    if ((event.metaKey || event.ctrlKey) && event.key === 'w') {
+      event.preventDefault();
+      return 'close';
+    }
 
-      // Cmd/Ctrl + M to minimize window
-      if ((event.metaKey || event.ctrlKey) && event.key === 'm') {
-        event.preventDefault();
-        return 'minimize';
-      }
+    if ((event.metaKey || event.ctrlKey) && event.key === 'm') {
+      event.preventDefault();
+      return 'minimize';
+    }
 
-      // F11 or Cmd/Ctrl + Enter to maximize/restore
-      if (event.key === 'F11' || ((event.metaKey || event.ctrlKey) && event.key === 'Enter')) {
-        event.preventDefault();
-        return 'maximize';
-      }
-    } catch (error) {
-      console.error('Error handling keyboard shortcut:', error);
+    if (event.key === 'F11' || ((event.metaKey || event.ctrlKey) && event.key === 'Enter')) {
+      event.preventDefault();
+      return 'maximize';
     }
 
     return null;
   }, [currentWindow]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      try {
-        dragStateRef.current = null;
-        resizeStateRef.current = null;
-      } catch (error) {
-        console.error('Error during cleanup:', error);
-      }
-    };
-  }, []);
 
   return {
     currentWindow,

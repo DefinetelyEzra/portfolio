@@ -108,22 +108,35 @@ export const useDesktopStore = create<DesktopStore>()(
             // Window Management Actions
             openWindow: (appId: string) => {
                 set((state) => {
-                    const existingWindow = state.windows.find((w) => w.appId === appId && w.isVisible);
-                    const app = DOCK_APPS.find((a) => a.id === appId);
+                    const windowsByApp = new Map<string, WindowState[]>();
+
+                    for (const window of state.windows) {
+                        if (!windowsByApp.has(window.appId)) {
+                            windowsByApp.set(window.appId, []);
+                        }
+                        windowsByApp.get(window.appId)!.push(window);
+                    }
+
+                    const appWindows = windowsByApp.get(appId) || [];
+                    const existingWindow = appWindows.find((w: WindowState) => w.isVisible);
 
                     if (existingWindow) {
                         if (existingWindow.isMinimized) {
                             return {
-                                windows: state.windows.map((w) =>
-                                    w.id === existingWindow.id ? { ...w, isMinimized: false, isAnimatingRestore: true, zIndex: state.nextZIndex } : w
+                                windows: state.windows.map((w: WindowState) =>
+                                    w.id === existingWindow.id
+                                        ? { ...w, isMinimized: false, isAnimatingRestore: true, zIndex: state.nextZIndex }
+                                        : w
                                 ),
                                 activeWindowId: existingWindow.id,
                                 nextZIndex: state.nextZIndex + 1,
                             };
                         } else {
                             return {
-                                windows: state.windows.map((w) =>
-                                    w.id === existingWindow.id ? { ...w, zIndex: state.nextZIndex } : w
+                                windows: state.windows.map((w: WindowState) =>
+                                    w.id === existingWindow.id
+                                        ? { ...w, zIndex: state.nextZIndex }
+                                        : w
                                 ),
                                 activeWindowId: existingWindow.id,
                                 nextZIndex: state.nextZIndex + 1,
@@ -131,13 +144,15 @@ export const useDesktopStore = create<DesktopStore>()(
                         }
                     }
 
+                    const app = DOCK_APPS.find((a) => a.id === appId);
                     const defaultSize = app?.defaultSize || { width: 800, height: 600 };
+
                     const newWindow: WindowState = {
-                        id: `window-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+                        id: `${appId}-${Date.now()}`,
                         appId,
                         position: {
-                            x: 100 + state.windows.length * 30,
-                            y: 100 + state.windows.length * 30,
+                            x: 100 + (state.windows.length % 10) * 30,
+                            y: 100 + (state.windows.length % 10) * 30,
                         },
                         size: defaultSize,
                         isMinimized: false,
