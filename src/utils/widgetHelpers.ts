@@ -12,39 +12,95 @@ export const WIDGET_CONSTRAINTS = {
   maxY: () => Math.max(600, globalThis.window?.innerHeight - 150 || 600),
 } as const;
 
-// Fixed positions for each widget type 
-export const FIXED_WIDGET_POSITIONS: Record<string, WidgetPosition> = {
-  "search-spotlight": {
-    x: 600, 
-    y: 20
+// Helper function to get current screen breakpoint
+function getScreenBreakpoint(): 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' {
+  const width = globalThis.window?.innerWidth || 1200;
+  
+  if (width < 480) return 'xs';
+  if (width < 640) return 'sm'; 
+  if (width < 768) return 'md';
+  if (width < 1024) return 'lg';
+  if (width < 1280) return 'xl';
+  return '2xl';
+}
+
+// Responsive positioning configurations for each breakpoint
+const RESPONSIVE_POSITIONS: Record<string, Record<string, WidgetPosition>> = {
+  'xs': {
+    'search-spotlight': { x: 10, y: 20 },
+    'analog-clock': { x: 10, y: 100 },
+    'calendar-glance': { x: 10, y: 220 },
+    'skill-meter': { x: 10, y: 340 },
+    'quote-generator': { x: 10, y: 460 },
+    'system-stats': { x: 10, y: 580 },
   },
-  "analog-clock": {
-    x: 100,
-    y: 100
+  'sm': {
+    'search-spotlight': { x: 50, y: 20 },
+    'analog-clock': { x: 20, y: 100 },
+    'calendar-glance': { x: 280, y: 100 },
+    'skill-meter': { x: 20, y: 320 },
+    'quote-generator': { x: 150, y: 220 },
+    'system-stats': { x: 350, y: 320 },
   },
-  "calendar-glance": {
-    x: 1200,
-    y: 100
+  'md': {
+    'search-spotlight': { x: 184, y: 20 }, // Center for 768px
+    'analog-clock': { x: 50, y: 100 },
+    'calendar-glance': { x: 418, y: 100 }, // Right side
+    'skill-meter': { x: 50, y: 350 },
+    'quote-generator': { x: 200, y: 250 },
+    'system-stats': { x: 418, y: 350 },
   },
-  "skill-meter": {
-    x: 100,
-    y: 450 
+  'lg': {
+    'search-spotlight': { x: 287, y: 20 }, // Center for 1024px
+    'analog-clock': { x: 80, y: 120 },
+    'calendar-glance': { x: 674, y: 120 },
+    'skill-meter': { x: 80, y: 400 },
+    'quote-generator': { x: 350, y: 280 },
+    'system-stats': { x: 674, y: 400 },
   },
-  "quote-generator": {
-    x: 635, 
-    y: 300 
+  'xl': {
+    'search-spotlight': { x: 415, y: 20 }, // Center for 1280px
+    'analog-clock': { x: 100, y: 100 },
+    'calendar-glance': { x: 930, y: 100 },
+    'skill-meter': { x: 100, y: 450 },
+    'quote-generator': { x: 500, y: 300 },
+    'system-stats': { x: 930, y: 450 },
   },
-} as const;
+  '2xl': {
+    'search-spotlight': { x: 645, y: 20 }, // Center for 1536px
+    'analog-clock': { x: 100, y: 100 },
+    'calendar-glance': { x: 1286, y: 100 },
+    'skill-meter': { x: 100, y: 450 },
+    'quote-generator': { x: 680, y: 300 },
+    'system-stats': { x: 1186, y: 450 },
+  },
+};
 
 // Helper function to calculate responsive positions
 function calculateResponsivePosition(type: string): WidgetPosition {
+  const breakpoint = getScreenBreakpoint();
   const screenWidth = globalThis.window?.innerWidth || 1200;
   const screenHeight = globalThis.window?.innerHeight || 800;
-
+  
+  // Get position from responsive configuration
+  const position = RESPONSIVE_POSITIONS[breakpoint]?.[type];
+  
+  if (position) {
+    // Ensure position stays within bounds
+    const maxX = Math.max(0, screenWidth - 300); // Assuming max widget width of 300
+    const maxY = Math.max(0, screenHeight - 200); // Assuming max widget height of 200
+    
+    return {
+      x: Math.min(position.x, maxX),
+      y: Math.min(position.y, maxY),
+    };
+  }
+  
+  // Fallback calculation if no predefined position exists
   switch (type) {
     case 'search-spotlight':
       return {
-        x: Math.max(0, screenWidth / 2 - 225), // Center horizontally
+        x: Math.max(0, (screenWidth / 2) - 225), // Center horizontally
         y: 20
       };
     case 'calendar-glance':
@@ -54,13 +110,13 @@ function calculateResponsivePosition(type: string): WidgetPosition {
       };
     case 'skill-meter':
       return {
-        x: 100,
+        x: Math.min(100, screenWidth - 250),
         y: Math.max(200, screenHeight - 350) // Bottom left area
       };
     case 'quote-generator':
       return {
-        x: Math.max(200, screenWidth / 2 - 190), // Center-ish
-        y: Math.max(150, screenHeight / 2 - 110) // Middle vertically
+        x: Math.max(20, Math.min((screenWidth / 2) - 190, screenWidth - 380)),
+        y: Math.max(150, Math.min((screenHeight / 2) - 110, screenHeight - 220))
       };
     case 'system-stats':
       return {
@@ -68,9 +124,21 @@ function calculateResponsivePosition(type: string): WidgetPosition {
         y: Math.max(300, screenHeight - 250) // Bottom right area
       };
     default:
-      return FIXED_WIDGET_POSITIONS[type] || { x: 150, y: 150 };
+      return { 
+        x: Math.min(150, screenWidth - 300), 
+        y: Math.min(150, screenHeight - 200) 
+      };
   }
 }
+
+// Keep the old fixed positions as fallback
+export const FIXED_WIDGET_POSITIONS: Record<string, WidgetPosition> = {
+  "search-spotlight": { x: 600, y: 20 },
+  "analog-clock": { x: 100, y: 100 },
+  "calendar-glance": { x: 1200, y: 100 },
+  "skill-meter": { x: 100, y: 450 },
+  "quote-generator": { x: 635, y: 300 },
+} as const;
 
 export const TIMEZONE_OPTIONS: readonly TimezoneOption[] = [
   { value: "UTC", label: "UTC", offset: "+00:00" },
@@ -110,12 +178,7 @@ export function generateWidgetId(): string {
 }
 
 export function getDefaultWidgetPosition(type: string): WidgetPosition {
-  // First check if we have a fixed position defined
-  if (FIXED_WIDGET_POSITIONS[type]) {
-    return FIXED_WIDGET_POSITIONS[type];
-  }
-  
-  // Fallback to responsive calculation if no fixed position is defined
+  // Always use responsive calculation for better screen adaptation
   return calculateResponsivePosition(type);
 }
 

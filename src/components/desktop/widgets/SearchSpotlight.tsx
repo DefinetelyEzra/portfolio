@@ -333,9 +333,9 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
       widget={widget}
       onClose={onClose}
       title="Search Spotlight"
-      className="relative z-[10000]"
+      className="relative z-[10000] overflow-visible"
     >
-      <div className="relative">
+      <div className="relative overflow-visible">
         {/* Search Input */}
         <div className={`relative flex items-center ${styles.searchInput} backdrop-blur-sm rounded-lg border shadow-lg`}>
           <Search className={`w-5 h-5 ${styles.text.secondary} ml-3 flex-shrink-0`} />
@@ -369,8 +369,8 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: settings.animateResults ? 0.2 : 0 }}
-              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl overflow-hidden z-50`}
-              style={{ maxHeight: '300px' }}
+              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl overflow-hidden`}
+              style={{ maxHeight: '300px', zIndex: 10001 }}
             >
               <div className="max-h-72 overflow-y-auto">
                 {filteredResults.map((result) => (
@@ -401,6 +401,7 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl p-4`}
+              style={{ zIndex: 10001 }}
             >
               <div className={`text-center ${styles.text.secondary}`}>
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />

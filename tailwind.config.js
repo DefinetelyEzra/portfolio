@@ -7,6 +7,14 @@ export const content = [
 export const darkMode = 'class';
 export const theme = {
   extend: {
+    screens: {
+      'xs': '480px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     fontFamily: {
       sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
     },
@@ -41,6 +49,14 @@ export const theme = {
     },
     backdropBlur: {
       xs: '2px',
+    },
+    spacing: {
+      'dock-sm': '48px',
+      'dock-md': '64px',
+      'dock-lg': '80px',
+      'widget-sm': '120px',
+      'widget-md': '160px',
+      'widget-lg': '200px',
     },
     animation: {
       'dock-bounce': 'dock-bounce 0.6s ease-in-out',

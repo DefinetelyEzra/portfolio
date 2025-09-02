@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
-            })} (Lagos time)</p>
+            })} (WAT)</p>
               <p style="margin-top: 10px;">
                 <a href="mailto:${email}?subject=Re: ${subject}" 
                    style="display: inline-block; background-color: #007bff; color: white; padding: 8px 16px; 
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
-            })} (Lagos time)</p>
+            })} (WAT)</p>
             </div>
           </div>
         </div>

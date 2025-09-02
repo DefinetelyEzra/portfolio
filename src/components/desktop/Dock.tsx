@@ -75,7 +75,7 @@ export default function Dock() {
                         }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         onHoverStart={() => setHoveredIndex(index)}
-                        data-dock-icon={app.id} // Add this for animation targeting
+                        data-dock-icon={app.id} 
                     >
                         <DockIcon
                             app={app}

@@ -5,7 +5,7 @@ export function getWidgetPosition(widgetType: string): WidgetPosition {
     return getDefaultWidgetPosition(widgetType);
 }
 
-// Resized handling (future use)
+// Resized handling 
 export function getContainerBounds(): { width: number; height: number } {
     try {
         if (typeof window !== 'undefined') {

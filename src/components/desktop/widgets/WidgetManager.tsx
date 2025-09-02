@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion';
 import { useWidgetStore } from '@/store/widgetStore';
 import { WIDGET_REGISTRY } from './index';
-import { getContainerBounds } from '@/utils/widgetLayout';
+import { getContainerBounds, validateWidgetPosition } from '@/utils/widgetLayout';
 import { LayoutSettings, DEFAULT_LAYOUT_SETTINGS } from '@/types/widgetLayout';
 import { WidgetState } from '@/types/widget';
 import { getDefaultWidgetPosition } from '@/utils/widgetHelpers';
@@ -30,6 +30,7 @@ export default function WidgetManager({
 
   const [containerBounds, setContainerBounds] = useState(() => getContainerBounds());
   const containerRef = useRef<HTMLDivElement>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const sortedWidgets = useMemo(() => {
     return [...widgets]
@@ -41,24 +42,78 @@ export default function WidgetManager({
       });
   }, [widgets]);
 
-  // Handle window resize to update responsive widget positions
+  // Enhanced resize handler with debouncing and responsive repositioning
   useEffect(() => {
-    const handleResize = () => {
-      const newBounds = getContainerBounds();
-      setContainerBounds(newBounds);
-
-      // Update positions for widgets that use responsive positioning
+    // Extracted function to update widget positions
+    const updateWidgetPositions = (newBounds: { width: number; height: number }) => {
       widgets.forEach(widget => {
         const newPosition = getDefaultWidgetPosition(widget.type);
-        if (newPosition.x !== widget.position.x || newPosition.y !== widget.position.y) {
-          updateWidget(widget.id, { position: newPosition });
+        const validatedPosition = validateWidgetPosition(newPosition, widget.size, newBounds);
+
+        // Only update if position actually changed
+        if (validatedPosition.x !== widget.position.x || validatedPosition.y !== widget.position.y) {
+          updateWidget(widget.id, { position: validatedPosition });
         }
       });
     };
 
+    const handleResize = () => {
+      // Clear existing timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+
+      // Debounce resize handling
+      resizeTimeoutRef.current = setTimeout(() => {
+        const newBounds = getContainerBounds();
+        setContainerBounds(newBounds);
+        updateWidgetPositions(newBounds);
+      }, 150);
+    };
+
     if (typeof window !== 'undefined') {
+      // Handle initial load
+      handleResize();
+
+      // Add event listeners
       window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+      window.addEventListener('orientationchange', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+        if (resizeTimeoutRef.current) {
+          clearTimeout(resizeTimeoutRef.current);
+        }
+      };
+    }
+  }, [widgets, updateWidget]);
+
+  // Handle viewport changes for better responsive behavior
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          // Recheck positions when page becomes visible again
+          const newBounds = getContainerBounds();
+          setContainerBounds(newBounds);
+
+          widgets.forEach(widget => {
+            const validatedPosition = validateWidgetPosition(
+              widget.position,
+              widget.size,
+              newBounds
+            );
+
+            if (validatedPosition.x !== widget.position.x || validatedPosition.y !== widget.position.y) {
+              updateWidget(widget.id, { position: validatedPosition });
+            }
+          });
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }
   }, [widgets, updateWidget]);
 
@@ -84,11 +139,19 @@ export default function WidgetManager({
     }
   }, [updateWidget]);
 
-  // Grid overlay for debugging positions
+  // Enhanced grid overlay with responsive sizing
   const renderGridOverlay = () => {
     if (!layoutSettings.showGrid) return null;
 
-    const cellSize = 50;
+    // Responsive grid cell size based on screen width
+    const getCellSize = () => {
+      const width = containerBounds.width;
+      if (width < 640) return 25;  // Small screens
+      if (width < 1024) return 35; // Medium screens
+      return 50; // Large screens
+    };
+
+    const cellSize = getCellSize();
     const gridLines: React.ReactElement[] = [];
 
     for (let x = 0; x < containerBounds.width; x += cellSize) {

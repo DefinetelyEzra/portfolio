@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WidgetState } from '@/types/widget';
 import { useDesktopStore } from '@/store/desktopStore';
@@ -20,6 +20,46 @@ export default function BaseWidget({
 }: BaseWidgetProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const { currentTheme } = useDesktopStore();
+
+  // Responsive size adjustments based on screen size
+  const responsiveStyles = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    // Calculate responsive scaling
+    let scaleFactor = 1;
+    let responsiveWidth = widget.size.width;
+    let responsiveHeight = widget.size.height;
+
+    // Scale down on smaller screens
+    if (screenWidth < 480) { // xs
+      scaleFactor = 0.85;
+      responsiveWidth = Math.min(widget.size.width, screenWidth - 20);
+      responsiveHeight = Math.min(widget.size.height, screenHeight - 40);
+    } else if (screenWidth < 640) { // sm
+      scaleFactor = 0.9;
+      responsiveWidth = Math.min(widget.size.width, screenWidth - 40);
+      responsiveHeight = Math.min(widget.size.height, screenHeight - 60);
+    } else if (screenWidth < 768) { // md
+      scaleFactor = 0.95;
+      responsiveWidth = Math.min(widget.size.width, screenWidth - 60);
+    }
+
+    // Ensure minimum sizes
+    responsiveWidth = Math.max(responsiveWidth, widget.constraints?.minWidth || 200);
+    responsiveHeight = Math.max(responsiveHeight, widget.constraints?.minHeight || 150);
+
+    return {
+      width: responsiveWidth,
+      height: responsiveHeight,
+      transform: `scale(${scaleFactor})`,
+      transformOrigin: 'top left',
+    };
+  }, [widget.size, widget.constraints]);
 
   const handleClose = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
@@ -56,8 +96,10 @@ export default function BaseWidget({
           style={{
             left: widget.position.x,
             top: widget.position.y,
-            width: widget.size.width,
-            minHeight: widget.size.height,
+            width: responsiveStyles.width || widget.size.width,
+            minHeight: responsiveStyles.height || widget.size.height,
+            transform: responsiveStyles.transform,
+            transformOrigin: responsiveStyles.transformOrigin,
             zIndex: widget.type === 'search-spotlight' && widget.isVisible ? 10000 : (widget.zIndex || 0),
             pointerEvents: 'auto',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)',
@@ -102,7 +144,7 @@ export default function BaseWidget({
           </div>
 
           {/* Widget Content */}
-          <div className="p-4 flex flex-col h-full">
+          <div className={`p-4 flex flex-col h-full ${widget.type === 'search-spotlight' ? 'overflow-visible' : 'overflow-hidden'}`}>
             {children}
           </div>
         </motion.div>
