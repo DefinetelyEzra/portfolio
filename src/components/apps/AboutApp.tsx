@@ -315,8 +315,8 @@ export default function AboutApp() {
   const styles = getThemeStyles(currentTheme);
 
   return (
-    <div className={`h-full overflow-y-auto bg-gradient-to-br ${styles.background}`}>
-      <div className="max-w-6xl mx-auto p-8">
+    <div className={`h-full overflow-y-auto bg-gradient-to-br ${styles.background} p-4`}>
+      <div className="max-w-6xl mx-auto">
         <HeaderSection styles={styles} />
         <StatsSection styles={styles} />
 
@@ -325,7 +325,7 @@ export default function AboutApp() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className={`${styles.cardBackground} rounded-2xl p-8 shadow-sm border mb-12`}
+          className={`${styles.cardBackground} rounded-2xl p-6 shadow-sm border mb-12 max-w-2xl mx-auto`}
         >
           <h2 className={`text-2xl font-bold ${styles.text.primary} mb-6`}>About Me</h2>
           <div className={`prose ${styles.text.secondary} leading-relaxed`}>

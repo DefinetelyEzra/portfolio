@@ -117,7 +117,7 @@ export default function ExtrasApp() {
         {
             icon: Computer,
             title: 'Coding Stats',
-            description: '11000+ lines of code were written for this site. Rookie numbers I know',
+            description: '13000+ lines of code were written for this site. Rookie numbers I know',
             gradient: 'from-yellow-500 to-red-500'
         },
         {
@@ -135,7 +135,7 @@ export default function ExtrasApp() {
                 <ComingSoon
                     title="SCARLET Mini"
                     subtitle="AI Assistant Coming Soon"
-                    description= "Get ready for SCARLET Mini, a powerful AI scheduler that optimizes your projects and tasks. Prioritize tasks, manage deadlines, and balance workloads with smart time-blocking and adaptive scheduling. Stay tuned for a productivity boost with data-driven insights and seamless calendar integration!"
+                    description="Get ready for SCARLET Mini, a powerful AI scheduler that optimizes your projects and tasks. Prioritize tasks, manage deadlines, and balance workloads with smart time-blocking and adaptive scheduling. Stay tuned for a productivity boost with data-driven insights and seamless calendar integration!"
                     variant="animated"
                     gradient="from-red-500 to-pink-600"
                     showBackButton={true}
@@ -328,7 +328,7 @@ export default function ExtrasApp() {
     };
 
     return (
-        <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 text-white">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 text-white">
             {/* Header */}
             <div className="p-6 border-b border-gray-700">
                 <h1 className="text-2xl font-bold mb-2">Misc</h1>

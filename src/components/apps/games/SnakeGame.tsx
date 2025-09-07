@@ -1,12 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAudioContext } from '@/components/ui/AudioProvider';
 
+// Device detection utilities
+const MOBILE_BREAKPOINT = 768;
+
+const isMobile = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < MOBILE_BREAKPOINT;
+};
+
+const isTouchDevice = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
 interface SnakeGameState {
   snake: { x: number; y: number }[];
   food: { x: number; y: number };
   direction: { x: number; y: number };
   score: number;
   gameOver: boolean;
+}
+
+interface TouchPosition {
+  x: number;
+  y: number;
 }
 
 const SnakeGame = () => {
@@ -19,8 +36,23 @@ const SnakeGame = () => {
   });
   const [highScore, setHighScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
+  const [touchStart, setTouchStart] = useState<TouchPosition | null>(null);
+  const [deviceIsMobile, setDeviceIsMobile] = useState(false);
+  const [deviceIsTouchDevice, setDeviceIsTouchDevice] = useState(false);
 
   const { playSnakeEatSound, playSnakeLoseSound, playSnakeMelody, stopSnakeMelody } = useAudioContext();
+
+  // Check device type on mount and window resize
+  useEffect(() => {
+    const updateDeviceInfo = () => {
+      setDeviceIsMobile(isMobile());
+      setDeviceIsTouchDevice(isTouchDevice());
+    };
+
+    updateDeviceInfo();
+    window.addEventListener('resize', updateDeviceInfo);
+    return () => window.removeEventListener('resize', updateDeviceInfo);
+  }, []);
 
   const moveSnake = useCallback(() => {
     setSnake((prev) => {
@@ -42,8 +74,8 @@ const SnakeGame = () => {
 
       // Check if food is eaten
       if (head.x === prev.food.x && head.y === prev.food.y) {
-        playSnakeEatSound(); // Play eating sound
-        setHighScore((prevHigh) => Math.max(prevHigh, prev.score + 10)); // Update high score
+        playSnakeEatSound();
+        setHighScore((prevHigh) => Math.max(prevHigh, prev.score + 10));
         return {
           ...prev,
           snake: newSnakeBody,
@@ -61,57 +93,111 @@ const SnakeGame = () => {
   }, [playSnakeEatSound]);
 
   useEffect(() => {
-    // Start the interval only when direction is set
     if (snake.direction.x !== 0 || snake.direction.y !== 0) {
       if (!gameStarted) {
         setGameStarted(true);
-        playSnakeMelody(); // Start background music when game begins
+        playSnakeMelody();
       }
-      const gameInterval = setInterval(moveSnake, 200); // movement speed in ms
+      const gameInterval = setInterval(moveSnake, 200);
       return () => clearInterval(gameInterval);
     }
   }, [snake.direction, moveSnake, gameStarted, playSnakeMelody]);
 
-  // Handle game over
   useEffect(() => {
     if (snake.gameOver && gameStarted) {
-      stopSnakeMelody(); // Stop background music
-      playSnakeLoseSound(); // Play lose sound
+      stopSnakeMelody();
+      playSnakeLoseSound();
     }
   }, [snake.gameOver, gameStarted, stopSnakeMelody, playSnakeLoseSound]);
+
+  const changeDirection = useCallback((newDirection: { x: number; y: number }) => {
+    if (snake.gameOver) return;
+
+    setSnake((prev) => {
+      // Prevent reverse direction
+      if (
+        (newDirection.x !== 0 && prev.direction.x === 0) ||
+        (newDirection.y !== 0 && prev.direction.y === 0)
+      ) {
+        return { ...prev, direction: newDirection };
+      }
+      return prev;
+    });
+  }, [snake.gameOver]);
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     if (snake.gameOver) return;
 
-    setSnake((prev) => {
-      let newDirection = { ...prev.direction };
+    switch (e.key) {
+      case 'ArrowUp':
+        changeDirection({ x: 0, y: -1 });
+        break;
+      case 'ArrowDown':
+        changeDirection({ x: 0, y: 1 });
+        break;
+      case 'ArrowLeft':
+        changeDirection({ x: -1, y: 0 });
+        break;
+      case 'ArrowRight':
+        changeDirection({ x: 1, y: 0 });
+        break;
+    }
+  }, [snake.gameOver, changeDirection]);
 
-      switch (e.key) {
-        case 'ArrowUp':
-          if (prev.direction.y === 0) newDirection = { x: 0, y: -1 };
-          break;
-        case 'ArrowDown':
-          if (prev.direction.y === 0) newDirection = { x: 0, y: 1 };
-          break;
-        case 'ArrowLeft':
-          if (prev.direction.x === 0) newDirection = { x: -1, y: 0 };
-          break;
-        case 'ArrowRight':
-          if (prev.direction.x === 0) newDirection = { x: 1, y: 0 };
-          break;
-      }
-
-      return { ...prev, direction: newDirection };
-    });
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (snake.gameOver) return;
+    
+    const touch = e.touches[0];
+    if (touch) {
+      setTouchStart({
+        x: touch.clientX,
+        y: touch.clientY,
+      });
+    }
   }, [snake.gameOver]);
 
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStart || snake.gameOver) return;
+
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+
+    const touchEnd: TouchPosition = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+
+    const deltaX = touchEnd.x - touchStart.x;
+    const deltaY = touchEnd.y - touchStart.y;
+    const minSwipeDistance = 30;
+
+    if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (deltaX > 0) {
+          changeDirection({ x: 1, y: 0 }); // Right
+        } else {
+          changeDirection({ x: -1, y: 0 }); // Left
+        }
+      } else if (deltaY > 0) {
+        changeDirection({ x: 0, y: 1 }); // Down
+      } else {
+        changeDirection({ x: 0, y: -1 }); // Up
+      }
+    }
+
+    setTouchStart(null);
+  }, [touchStart, snake.gameOver, changeDirection]);
+
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [handleKeyPress]);
+    if (!deviceIsTouchDevice) {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [handleKeyPress, deviceIsTouchDevice]);
 
   const resetGame = () => {
-    stopSnakeMelody(); // Stop music when resetting
+    stopSnakeMelody();
     setSnake({
       snake: [{ x: 10, y: 10 }],
       food: { x: 15, y: 15 },
@@ -119,8 +205,22 @@ const SnakeGame = () => {
       score: 0,
       gameOver: false,
     });
-    setGameStarted(false); // Reset game started state
-    // High score persists during the game session
+    setGameStarted(false);
+    setTouchStart(null);
+  };
+
+  const getInstructionText = () => {
+    if (deviceIsMobile || deviceIsTouchDevice) {
+      return 'Swipe to move • Eat red food to grow';
+    }
+    return 'Use arrow keys to move • Eat red food to grow';
+  };
+
+  const getGameOverInstructionText = () => {
+    if (deviceIsMobile || deviceIsTouchDevice) {
+      return 'Swipe to control the snake';
+    }
+    return 'Use arrow keys to control the snake';
   };
 
   return (
@@ -154,8 +254,10 @@ const SnakeGame = () => {
       </div>
 
       <div
-        className="grid grid-cols-20 gap-px bg-gray-700 p-2 rounded-lg max-w-lg mx-auto mb-4 border-none outline-none focus:ring-2 focus:ring-green-400"
+        className="grid grid-cols-20 gap-px bg-gray-700 p-2 rounded-lg max-w-lg mx-auto mb-4 border-none outline-none focus:ring-2 focus:ring-green-400 touch-none select-none"
         style={{ gridTemplateColumns: 'repeat(20, 1fr)' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {Array.from({ length: 400 }).map((_, index) => {
           const x = index % 20;
@@ -182,12 +284,12 @@ const SnakeGame = () => {
       {snake.gameOver && (
         <div className="text-center">
           <p className="text-red-400 text-lg mb-2">Game Over!</p>
-          <p className="text-gray-300">Use arrow keys to control the snake</p>
+          <p className="text-gray-300">{getGameOverInstructionText()}</p>
         </div>
       )}
 
       {!snake.gameOver && (
-        <p className="text-center text-gray-400">Use arrow keys to move • Eat red food to grow</p>
+        <p className="text-center text-gray-400">{getInstructionText()}</p>
       )}
     </div>
   );

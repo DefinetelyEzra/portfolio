@@ -106,6 +106,41 @@ body {
   }
 }
 
+/* Add these mobile-specific styles */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Mobile app container styles */
+.mobile-app-container {
+  @apply overflow-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iOS-style blur effects for mobile */
+@media (max-width: 767px) {
+  .backdrop-blur-ios {
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  }
+}
+
+/* Hide scrollbars on mobile widgets */
+.mobile-widget-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-widget-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes genie-restore {
   0% {
     transform: scale(0.1) perspective(1000px) rotateX(-15deg);

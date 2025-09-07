@@ -232,323 +232,321 @@ export default function ContactApp() {
   };
 
   return (
-    <div className={`h-full flex flex-col bg-gradient-to-br ${styles.background}`}>
-      {/* Header */}
-      <div className={`p-6 border-b ${styles.headerBorder}`}>
-        <h1 className={`text-2xl font-bold ${styles.text.primary} mb-2`}>Get In Touch</h1>
-        <p className={`${styles.text.secondary} mb-4`}>Let&apos;s discuss opportunities, collaborations, or just say hello!</p>
+    <div className={`h-full flex flex-col bg-gradient-to-br ${styles.background} p-4`}>
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className={`p-4 border-b ${styles.headerBorder}`}>
+          <h1 className={`text-2xl font-bold ${styles.text.primary} mb-2`}>Get In Touch</h1>
+          <p className={`${styles.text.secondary} mb-4`}>Let&apos;s discuss opportunities, collaborations, or just say hello!</p>
 
-        {/* Tab Navigation */}
-        <div className={`flex space-x-1 ${styles.tabContainer} rounded-lg p-1`}>
-          <button
-            onClick={() => setActiveTab('form')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'form' ? styles.tabActive : styles.tabInactive
-              }`}
-          >
-            <MessageSquare className="w-4 h-4 inline mr-2" />
-            Send Message
-          </button>
-          <button
-            onClick={() => setActiveTab('info')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'info' ? styles.tabActive : styles.tabInactive
-              }`}
-          >
-            <Mail className="w-4 h-4 inline mr-2" />
-            Contact Info
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 p-6 overflow-y-auto">
-        {activeTab === 'form' ? (
-          <div className="max-w-2xl mx-auto">
-            {/* Success Message */}
-            {submitted && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mb-6 p-4 ${styles.successAlert} border rounded-lg flex items-center space-x-3`}
-              >
-                <CheckCircle className={`w-5 h-5 ${styles.successText.primary} flex-shrink-0`} />
-                <div>
-                  <p className={`${styles.successText.primary} font-medium`}>Message sent successfully!</p>
-                  <p className={`${styles.successText.secondary} text-sm`}>I&apos;ll get back to you within 24 hours.</p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Quick Topics */}
-            <div className="mb-6">
-              <h3 className={`text-lg font-semibold ${styles.text.primary} mb-3`}>Quick Topics</h3>
-              <div className="flex flex-wrap gap-2">
-                {quickTopics.map((topic) => (
-                  <button
-                    key={topic}
-                    onClick={() => handleQuickTopic(topic)}
-                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${form.subject === topic ? styles.quickTopicActive : styles.quickTopicInactive
-                      }`}
-                  >
-                    {topic}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className={`${styles.cardBackground} rounded-xl shadow-sm border p-6`}
+          {/* Tab Navigation */}
+          <div className={`flex space-x-1 ${styles.tabContainer} rounded-lg p-1`}>
+            <button
+              onClick={() => setActiveTab('form')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'form' ? styles.tabActive : styles.tabInactive
+                }`}
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className={`block text-sm font-medium ${styles.label} mb-1`}>
-                      Your Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={form.name}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
-                      placeholder="Jardani Jovonovich"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className={`block text-sm font-medium ${styles.label} mb-1`}>
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={form.email}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
-                      placeholder="jardani@example.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="subject" className={`block text-sm font-medium ${styles.label} mb-1`}>
-                      Subject *
-                    </label>
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      value={form.subject}
-                      onChange={handleInputChange}
-                      required
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
-                      placeholder="What's this about?"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="priority" className={`block text-sm font-medium ${styles.label} mb-1`}>
-                      Priority
-                    </label>
-                    <select
-                      id="priority"
-                      name="priority"
-                      value={form.priority}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
-                    >
-                      <option value="low">Low Priority</option>
-                      <option value="medium">Medium Priority</option>
-                      <option value="high">High Priority</option>
-                    </select>
-                    <span className={`inline-block mt-1 px-2 py-1 text-xs rounded-full ${getPriorityColor(form.priority)}`}>
-                      {form.priority.charAt(0).toUpperCase() + form.priority.slice(1)} Priority
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className={`block text-sm font-medium ${styles.label} mb-1`}>
-                    Message *
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={form.message}
-                    onChange={handleInputChange}
-                    required
-                    rows={6}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
-                    placeholder="Tell me about your project, opportunity, or just say hello..."
-                    onKeyDown={(e) => {
-                      // Ensure spacebar and other key events are not prevented
-                      if (e.key === ' ') {
-                        e.stopPropagation();
-                      }
-                    }}
-                  />
-                  <div className={`text-right text-sm ${styles.text.muted} mt-1`}>
-                    {form.message.length} characters
-                  </div>
-                </div>
-
-                {/* Extracted button class logic */}
-                {(() => {
-                  let btnClass;
-                  if (submitted) {
-                    btnClass = 'bg-green-500 text-white cursor-default';
-                  } else if (isSubmitting) {
-                    btnClass = 'bg-blue-400 text-white cursor-not-allowed';
-                  } else {
-                    btnClass = 'bg-blue-500 text-white hover:bg-blue-600';
-                  }
-
-                  let btnContent;
-                  if (submitted) {
-                    btnContent = (
-                      <>
-                        <CheckCircle className="w-5 h-5" />
-                        <span>Message Sent!</span>
-                      </>
-                    );
-                  } else if (isSubmitting) {
-                    btnContent = (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Sending...</span>
-                      </>
-                    );
-                  } else {
-                    btnContent = (
-                      <>
-                        <Send className="w-5 h-5" />
-                        <span>Send Message</span>
-                      </>
-                    );
-                  }
-
-                  return (
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || submitted}
-                      className={`w-full py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 ${btnClass}`}
-                    >
-                      {btnContent}
-                    </button>
-                  );
-                })()}
-              </form>
-            </motion.div>
+              <MessageSquare className="w-4 h-4 inline mr-2" />
+              Send Message
+            </button>
+            <button
+              onClick={() => setActiveTab('info')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'info' ? styles.tabActive : styles.tabInactive
+                }`}
+            >
+              <Mail className="w-4 h-4 inline mr-2" />
+              Contact Info
+            </button>
           </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            {/* Contact Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {contactInfo.map((info, index) => {
-                const IconComponent = info.icon;
-                const infoStyles = styles.contactInfo[info.type];
-                return (
-                  <motion.div
-                    key={info.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    className={`${infoStyles.bg} rounded-xl p-6 border border-gray-100`}
-                  >
-                    <div className="flex items-start space-x-4">
-                      <div className={`p-3 rounded-lg ${infoStyles.iconBg} shadow-sm`}>
-                        <IconComponent className={`w-6 h-6 ${infoStyles.color}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className={`text-lg font-semibold ${styles.text.primary} mb-1`}>{info.label}</h3>
-                        {info.href ? (
-                          <a
-                            href={info.href}
-                            className={`${infoStyles.color} hover:underline block`}
-                          >
-                            {info.value}
-                          </a>
-                        ) : (
-                          <p className={styles.text.secondary}>{info.value}</p>
-                        )}
+        </div>
+
+        <div className="flex-1 p-4 overflow-y-auto">
+          {activeTab === 'form' ? (
+            <div className="max-w-md mx-auto">
+              {/* Success Message */}
+              {submitted && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`mb-6 p-4 ${styles.successAlert} border rounded-lg flex items-center space-x-3`}
+                >
+                  <CheckCircle className={`w-5 h-5 ${styles.successText.primary} flex-shrink-0`} />
+                  <div>
+                    <p className={`${styles.successText.primary} font-medium`}>Message sent successfully!</p>
+                    <p className={`${styles.successText.secondary} text-sm`}>I&apos;ll get back to you within 24 hours.</p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Quick Topics */}
+              <div className="mb-6">
+                <h3 className={`text-lg font-semibold ${styles.text.primary} mb-3`}>Quick Topics</h3>
+                <div className="flex flex-wrap gap-2">
+                  {quickTopics.map((topic) => (
+                    <button
+                      key={topic}
+                      onClick={() => handleQuickTopic(topic)}
+                      className={`px-3 py-1 text-sm rounded-full border transition-colors ${form.subject === topic ? styles.quickTopicActive : styles.quickTopicInactive
+                        }`}
+                    >
+                      {topic}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className={`${styles.cardBackground} rounded-xl shadow-sm border p-6`}
+              >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <div>
+                      <label htmlFor="name" className={`block text-sm font-medium ${styles.label} mb-1`}>
+                        Your Name *
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={form.name}
+                        onChange={handleInputChange}
+                        required
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
+                        placeholder="Jardani Jovonovich"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="email" className={`block text-sm font-medium ${styles.label} mb-1`}>
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={form.email}
+                        onChange={handleInputChange}
+                        required
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
+                        placeholder="jardani@example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="subject" className={`block text-sm font-medium ${styles.label} mb-1`}>
+                        Subject *
+                      </label>
+                      <input
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        value={form.subject}
+                        onChange={handleInputChange}
+                        required
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
+                        placeholder="What's this about?"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="priority" className={`block text-sm font-medium ${styles.label} mb-1`}>
+                        Priority
+                      </label>
+                      <select
+                        id="priority"
+                        name="priority"
+                        value={form.priority}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
+                      >
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                      </select>
+                      <span className={`inline-block mt-1 px-2 py-1 text-xs rounded-full ${getPriorityColor(form.priority)}`}>
+                        {form.priority.charAt(0).toUpperCase() + form.priority.slice(1)} Priority
+                      </span>
+                    </div>
+
+                    <div>
+                      <label htmlFor="message" className={`block text-sm font-medium ${styles.label} mb-1`}>
+                        Message *
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        value={form.message}
+                        onChange={handleInputChange}
+                        required
+                        rows={6}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
+                        placeholder="Tell me about your project, opportunity, or just say hello..."
+                        onKeyDown={(e) => {
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
+                      />
+                      <div className={`text-right text-sm ${styles.text.muted} mt-1`}>
+                        {form.message.length} characters
                       </div>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                  </div>
 
-            {/* Social Links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className={`${styles.cardBackground} rounded-xl shadow-sm border p-6 mb-6`}
-            >
-              <h3 className={`text-lg font-semibold ${styles.text.primary} mb-4`}>Connect With Me</h3>
-              <div className="flex space-x-4">
-                {socialLinks.map((social) => {
-                  const IconComponent = social.icon;
-                  const socialStyles = styles.socialLinks[social.type];
+                  {(() => {
+                    let btnClass;
+                    if (submitted) {
+                      btnClass = 'bg-green-500 text-white cursor-default';
+                    } else if (isSubmitting) {
+                      btnClass = 'bg-blue-400 text-white cursor-not-allowed';
+                    } else {
+                      btnClass = 'bg-blue-500 text-white hover:bg-blue-600';
+                    }
+
+                    let btnContent;
+                    if (submitted) {
+                      btnContent = (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          <span>Message Sent!</span>
+                        </>
+                      );
+                    } else if (isSubmitting) {
+                      btnContent = (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      );
+                    } else {
+                      btnContent = (
+                        <>
+                          <Send className="w-5 h-5" />
+                          <span>Send Message</span>
+                        </>
+                      );
+                    }
+
+                    return (
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || submitted}
+                        className={`w-full py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 ${btnClass}`}
+                      >
+                        {btnContent}
+                      </button>
+                    );
+                  })()}
+                </form>
+              </motion.div>
+            </div>
+          ) : (
+            <div className="max-w-md mx-auto">
+              {/* Contact Information */}
+              <div className="grid grid-cols-1 gap-6 mb-8">
+                {contactInfo.map((info, index) => {
+                  const IconComponent = info.icon;
+                  const infoStyles = styles.contactInfo[info.type];
                   return (
-                    <a
-                      key={social.name}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg border ${styles.cardBackground.includes('gray-800') ? 'border-gray-600' : 'border-gray-200'} ${socialStyles.text} transition-colors ${socialStyles.hover}`}
+                    <motion.div
+                      key={info.label}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      className={`${infoStyles.bg} rounded-xl p-4 border border-gray-100`}
                     >
-                      <IconComponent className="w-5 h-5" />
-                      <span className="font-medium">{social.name}</span>
-                    </a>
+                      <div className="flex items-start space-x-3">
+                        <div className={`p-2 rounded-lg ${infoStyles.iconBg} shadow-sm`}>
+                          <IconComponent className={`w-5 h-5 ${infoStyles.color}`} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className={`text-lg font-semibold ${styles.text.primary} mb-1`}>{info.label}</h3>
+                          {info.href ? (
+                            <a
+                              href={info.href}
+                              className={`${infoStyles.color} hover:underline block`}
+                            >
+                              {info.value}
+                            </a>
+                          ) : (
+                            <p className={styles.text.secondary}>{info.value}</p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
                   );
                 })}
               </div>
-            </motion.div>
 
-            {/* Quick Response Info */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
-              className={`bg-gradient-to-r ${styles.responseInfo} rounded-xl p-6 border`}
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 ${styles.responseIcon} rounded-lg`}>
-                  <AlertCircle className="w-6 h-6 text-white" />
+              {/* Social Links */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
+                className={`${styles.cardBackground} rounded-xl shadow-sm border p-4 mb-6`}
+              >
+                <h3 className={`text-lg font-semibold ${styles.text.primary} mb-4`}>Connect With Me</h3>
+                <div className="flex flex-col space-y-4">
+                  {socialLinks.map((social) => {
+                    const IconComponent = social.icon;
+                    const socialStyles = styles.socialLinks[social.type];
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg border ${styles.cardBackground.includes('gray-800') ? 'border-gray-600' : 'border-gray-200'} ${socialStyles.text} transition-colors ${socialStyles.hover}`}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                        <span className="font-medium">{social.name}</span>
+                      </a>
+                    );
+                  })}
                 </div>
-                <div>
-                  <h3 className={`text-lg font-semibold ${styles.text.primary} mb-2`}>Response Time</h3>
-                  <p className={`${styles.text.secondary} mb-4`}>
-                    I typically respond to messages within 24 hours during weekdays. For urgent matters,
-                    feel free to call or mention &lsquo;urgent&rsquo; in your subject line.
-                  </p>
-                  <div className={`space-y-2 text-sm ${styles.text.secondary}`}>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Project collaborations: Same day</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <span>General inquiries: Within 24 hours</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>Teaching/Mentorship: Within 48 hours</span>
+              </motion.div>
+
+              {/* Quick Response Info */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.3 }}
+                className={`bg-gradient-to-r ${styles.responseInfo} rounded-xl p-4 border`}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className={`p-2 ${styles.responseIcon} rounded-lg`}>
+                    <AlertCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-semibold ${styles.text.primary} mb-2`}>Response Time</h3>
+                    <p className={`${styles.text.secondary} mb-4`}>
+                      I typically respond to messages within 24 hours during weekdays. For urgent matters,
+                      feel free to call or mention &lsquo;urgent&rsquo; in your subject line.
+                    </p>
+                    <div className={`space-y-2 text-sm ${styles.text.secondary}`}>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>Project collaborations: Same day</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span>General inquiries: Within 24 hours</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Teaching/Mentorship: Within 48 hours</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

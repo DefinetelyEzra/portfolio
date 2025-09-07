@@ -16,7 +16,7 @@ import {
     Shield,
     User
 } from 'lucide-react';
-import { ALL_WALLPAPERS } from '@/utils/wallpaperUtils';
+import { ALL_WALLPAPERS, getWallpapersForDevice } from '@/utils/wallpaperUtils';
 import { useDesktopStore } from '@/store/desktopStore';
 import WidgetSettings from '../desktop/widgets/settings/WidgetSettings';
 import { AudioManager } from '@/utils/audioManager';
@@ -174,7 +174,7 @@ export default function SettingsApp() {
         const audioManager = AudioManager.getInstance();
 
         if (key === 'soundEnabled') {
-            updateSettings({ soundEnabled: value as boolean }); 
+            updateSettings({ soundEnabled: value as boolean });
             audioManager.setEnabled(value as boolean);
         } else if (key === 'wallpaper') {
             updateSettings({ wallpaper: value as string });
@@ -385,7 +385,7 @@ export default function SettingsApp() {
                                 Wallpaper
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {ALL_WALLPAPERS.map((wallpaper) => (
+                                {getWallpapersForDevice(false).map((wallpaper) => (
                                     <motion.button
                                         key={wallpaper.id}
                                         onClick={() => handleSettingChange('wallpaper', wallpaper.path)}
