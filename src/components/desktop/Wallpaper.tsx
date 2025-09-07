@@ -21,6 +21,18 @@ export default function Wallpaper() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [currentWallpaper, setCurrentWallpaper] = useState<WallpaperData>(initialWallpaper);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
 
   const getWallpaperStyle = useMemo(() => {
     const wallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper) || initialWallpaper;
@@ -43,7 +55,7 @@ export default function Wallpaper() {
 
   // Debounced wallpaper change
   const changeWallpaper = useCallback((newWallpaper: WallpaperData) => {
-    if (isTransitioning) return; // Prevent rapid transitions
+    if (isTransitioning) return; 
     setIsTransitioning(true);
     setTimeout(() => {
       updateSettings({ wallpaper: newWallpaper.path });
@@ -57,17 +69,17 @@ export default function Wallpaper() {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      const nextWallpaper = getNextWallpaper(settings.wallpaper);
+      const nextWallpaper = getNextWallpaper(settings.wallpaper, isMobile);
       changeWallpaper(nextWallpaper);
     }, CYCLE_INTERVALS[cycleSpeed]);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, cycleSpeed, settings.wallpaper, changeWallpaper]);
+  }, [isAutoPlaying, cycleSpeed, settings.wallpaper, changeWallpaper, isMobile]);
 
   const goToNext = useCallback(() => {
-    const nextWallpaper = getNextWallpaper(settings.wallpaper);
+    const nextWallpaper = getNextWallpaper(settings.wallpaper, isMobile);
     changeWallpaper(nextWallpaper);
-  }, [settings.wallpaper, changeWallpaper]);
+  }, [settings.wallpaper, changeWallpaper, isMobile]);
 
   const goToPrevious = useCallback(() => {
     const currentIndex = ALL_WALLPAPERS.findIndex((w: WallpaperData) => w.path === settings.wallpaper);
@@ -95,7 +107,7 @@ export default function Wallpaper() {
         <div
           className="fixed inset-0 -z-20"
           style={{
-            backgroundImage: `url(${getNextWallpaper(settings.wallpaper).path})`,
+            backgroundImage: `url(${getNextWallpaper(settings.wallpaper, isMobile).path})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
