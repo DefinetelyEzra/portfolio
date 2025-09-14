@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { memo, useState, useCallback } from 'react';
+import { motion, Variants } from 'framer-motion';
 import { AppConfig } from '@/types/desktop';
 import Image from 'next/image';
 
@@ -10,62 +11,90 @@ interface MobileAppIconProps {
     disabled?: boolean;
 }
 
-export default function MobileAppIcon({ app, onClick, disabled = false }: Readonly<MobileAppIconProps>) {
-    const isSkillsApp = app.id === 'skills' || app.name.toLowerCase() === 'skills';
-    const isExtrasApp = app.id === 'extras' || app.name.toLowerCase() === 'extras';
+function MobileAppIcon({ app, onClick, disabled = false }: Readonly<MobileAppIconProps>) {
+    const [imageError, setImageError] = useState(false);
 
-    let imageClass = 'w-14 h-14 object-cover';
-    if (isSkillsApp) {
-        imageClass += ' scale-125';
-    } else if (isExtrasApp) {
-        imageClass += ' p-2';
-    }
+    const isSkillsApp = app.id === 'skills';
+    const isExtrasApp = app.id === 'extras';
+
+    const imageClass = (() => {
+        let baseClass = 'w-14 h-14 object-cover';
+        if (isSkillsApp) baseClass += ' scale-125';
+        else if (isExtrasApp) baseClass += ' p-2';
+        return baseClass;
+    })();
+
+    const handleImageError = useCallback(() => {
+        setImageError(true);
+    }, []);
+
+    const handleClick = useCallback(() => {
+        if (!disabled) {
+            onClick();
+        }
+    }, [disabled, onClick]);
+
+    const iconVariants: Variants = {
+        initial: { scale: 0.8, opacity: 0 },
+        animate: {
+            scale: 1,
+            opacity: 1,
+            transition: {
+                type: 'spring' as const, 
+                stiffness: 200,
+                damping: 15,
+            }
+        }
+    };
 
     return (
         <motion.button
-            className="flex flex-col items-center space-y-2 p-2 rounded-xl active:scale-95 transition-transform"
-            onClick={!disabled ? onClick : undefined}
+            className="flex flex-col items-center space-y-2 p-2 rounded-xl"
+            onClick={handleClick}
             disabled={disabled}
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
         >
             {/* App Icon */}
             <motion.div
-                className={`w-14 h-14 rounded-2xl shadow-lg overflow-hidden ${
-                    isExtrasApp ? 'bg-gray-700' : ''
-                }`}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{
-                    type: 'spring',
-                    stiffness: 260,
-                    damping: 20,
-                    delay: Math.random() * 0.2,
-                }}
+                className={`w-14 h-14 rounded-2xl shadow-lg overflow-hidden ${isExtrasApp ? 'bg-gray-700' : ''
+                    }`}
+                variants={iconVariants}
+                initial="initial"
+                animate="animate"
             >
-                <Image
-                    src={app.icon}
-                    alt={app.name}
-                    width={56}
-                    height={56}
-                    className={imageClass}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.parentElement!.innerHTML = `<span class="text-lg font-bold text-gray-600 dark:text-gray-300">${app.name.charAt(0)}</span>`;
-                    }}
-                />
+                {imageError ? (
+                    <div className="w-full h-full bg-gray-600 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">
+                            {app.name.charAt(0)}
+                        </span>
+                    </div>
+                ) : (
+                    <Image
+                        src={app.icon}
+                        alt={app.name}
+                        width={56}
+                        height={56}
+                        className={imageClass}
+                        onError={handleImageError}
+                        loading="lazy"
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                        sizes="56px"
+                    />
+                )}
             </motion.div>
 
             {/* App Name */}
             <motion.span
                 className="text-xs text-white font-medium text-center leading-tight max-w-16 truncate"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.05 }}
             >
                 {app.name}
             </motion.span>
         </motion.button>
     );
 }
+
+export default memo(MobileAppIcon);

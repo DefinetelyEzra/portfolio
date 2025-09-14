@@ -24,17 +24,26 @@ export default function MobileWidgets() {
         };
 
         updateDateTime();
-        const interval = setInterval(updateDateTime, 1000);
-        return () => clearInterval(interval);
+        const timeInterval = setInterval(() => updateDateTime(), 10000);
+        const dateInterval = setInterval(() => {
+            setCurrentDate(new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric'
+            }));
+        }, 60000); // Update date every 60 seconds
+        return () => {
+            clearInterval(timeInterval);
+            clearInterval(dateInterval);
+        };
     }, []);
 
     return (
         <div className="px-4 space-y-4">
             {/* Large Clock Widget */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20"
             >
                 <div className="flex items-center space-x-3 mb-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 import { MOBILE_APPS, MOBILE_GRID, MOBILE_GESTURES } from '@/utils/mobileConstants';
 import MobileAppIcon from './MobileAppIcon';
@@ -18,90 +18,131 @@ interface MobileLauncherProps {
 export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherProps>) {
     const [currentPage, setCurrentPage] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
     const { addNotification } = useDesktopStore();
     const constraintsRef = useRef<HTMLDivElement>(null);
     const { settings } = useMobileStore();
+
+    const paginationData = useMemo(() => {
+        const totalApps = MOBILE_APPS.length;
+        const appsPerPage = MOBILE_GRID.COLUMNS * MOBILE_GRID.ROWS_PER_SCREEN;
+        const totalPages = Math.ceil(totalApps / appsPerPage);
+        return { totalApps, appsPerPage, totalPages };
+    }, []);
+
+    const paginatedApps = useMemo(() => {
+        const pages = [];
+        for (let i = 0; i < paginationData.totalPages; i++) {
+            const startIdx = i * paginationData.appsPerPage;
+            const endIdx = (i + 1) * paginationData.appsPerPage;
+            pages.push(MOBILE_APPS.slice(startIdx, endIdx));
+        }
+        return pages;
+    }, [paginationData]);
 
     useEffect(() => {
         sessionStorage.removeItem('app-navigation-active');
 
         if (isMobile() && settings.wallpaper) {
-            document.body.style.backgroundImage = `url(${settings.wallpaper})`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundPosition = 'center';
-            document.body.style.backgroundRepeat = 'no-repeat';
-            document.body.style.backgroundAttachment = 'fixed';
+            const body = document.body;
+            const style = body.style;
+
+            style.backgroundImage = `url(${settings.wallpaper})`;
+            style.backgroundSize = 'cover';
+            style.backgroundPosition = 'center';
+            style.backgroundRepeat = 'no-repeat';
+            style.backgroundAttachment = 'fixed';
         }
+
+        setIsInitialized(true);
 
         return () => {
             if (isMobile()) {
                 document.body.style.backgroundImage = '';
+                document.body.style.backgroundSize = '';
+                document.body.style.backgroundPosition = '';
+                document.body.style.backgroundRepeat = '';
+                document.body.style.backgroundAttachment = '';
             }
         };
     }, [settings.wallpaper]);
 
-    // Calculate total pages
-    const totalApps = MOBILE_APPS.length;
-    const appsPerPage = MOBILE_GRID.COLUMNS * MOBILE_GRID.ROWS_PER_SCREEN;
-    const totalPages = Math.ceil(totalApps / appsPerPage);
-
-    // Handle page navigation
     const handleDragEnd = useCallback((_: unknown, info: PanInfo) => {
         setIsDragging(false);
 
-        if (Math.abs(info.offset.x) < MOBILE_GESTURES.SWIPE_THRESHOLD) return;
+        const threshold = MOBILE_GESTURES.SWIPE_THRESHOLD;
+        if (Math.abs(info.offset.x) < threshold) return;
 
-        if (info.offset.x > MOBILE_GESTURES.SWIPE_THRESHOLD && currentPage > 0) {
-            setCurrentPage(currentPage - 1);
-        } else if (info.offset.x < -MOBILE_GESTURES.SWIPE_THRESHOLD && currentPage < totalPages - 1) {
-            setCurrentPage(currentPage + 1);
-        }
-    }, [currentPage, totalPages]);
+        setCurrentPage(prev => {
+            if (info.offset.x > threshold && prev > 0) {
+                return prev - 1;
+            } else if (info.offset.x < -threshold && prev < paginationData.totalPages - 1) {
+                return prev + 1;
+            }
+            return prev;
+        });
+    }, [paginationData.totalPages]);
 
-    // Handle app launch
     const handleAppClick = useCallback((appId: string) => {
         const app = MOBILE_APPS.find(a => a.id === appId);
         if (app) {
             sessionStorage.setItem('app-navigation-active', 'true');
-
             onAppOpen(appId);
+
             addNotification({
                 title: `Opening ${app.name}`,
                 message: '',
                 type: 'info',
-                duration: 2000,
+                duration: 1500,
             });
         }
     }, [onAppOpen, addNotification]);
 
-    // Page indicator dots
-    const renderPageIndicators = () => {
-        if (totalPages <= 1) return null;
+    const handlePageIndicatorClick = useCallback((pageIndex: number) => {
+        setCurrentPage(pageIndex);
+    }, []);
+
+    const pageIndicators = useMemo(() => {
+        if (paginationData.totalPages <= 1) return null;
 
         return (
             <div className="flex justify-center space-x-2 pb-8">
-                {Array.from({ length: totalPages }, (_, i) => (
+                {Array.from({ length: paginationData.totalPages }, (_, i) => (
                     <motion.div
-                        key={i}
-                        className={`w-2 h-2 rounded-full ${i === currentPage ? 'bg-white' : 'bg-white/30'
+                        key={`page-${i}`}
+                        className={`w-2 h-2 rounded-full cursor-pointer ${i === currentPage ? 'bg-white' : 'bg-white/30'
                             }`}
                         animate={{ scale: i === currentPage ? 1.2 : 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        onClick={() => setCurrentPage(i)}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        onClick={() => handlePageIndicatorClick(i)}
                     />
                 ))}
             </div>
         );
-    };
+    }, [paginationData.totalPages, currentPage, handlePageIndicatorClick]);
+
+    if (!isInitialized) {
+        return (
+            <div className="fixed inset-0 bg-black flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    const backgroundStyle = settings.wallpaper
+        ? { backgroundImage: `url(${settings.wallpaper})` }
+        : { background: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #be185d 100%)' };
 
     return (
-        <div className="fixed inset-0" style={{
-            backgroundImage: settings.wallpaper ? `url(${settings.wallpaper})` : 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #be185d 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-        }}>
-
+        <div
+            className="fixed inset-0"
+            style={{
+                ...backgroundStyle,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            }}
+        >
             {/* Welcome Notification */}
             <MobileNotification />
 
@@ -118,29 +159,26 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                     dragConstraints={constraintsRef}
                     onDragStart={() => setIsDragging(true)}
                     onDragEnd={handleDragEnd}
-                    animate={{ x: -currentPage * window.innerWidth }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    style={{ width: `${totalPages * 100}%` }}
+                    animate={{ x: -currentPage * (typeof window !== 'undefined' ? window.innerWidth : 375) }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    style={{ width: `${paginationData.totalPages * 100}%` }}
                 >
-                    {Array.from({ length: totalPages }, (_, pageIndex) => (
-                        <div
-                            key={pageIndex}
-                            className="flex-shrink-0 w-full px-6"
-                            style={{ width: `${100 / totalPages}%` }}
-                        >
+                    {paginatedApps.map((pageApps) => {
+                        const pageKey = pageApps.map(app => app.id).join('-');
+                        return (
                             <div
-                                className="grid gap-4 h-full content-start pt-8"
-                                style={{
-                                    gridTemplateColumns: `repeat(${MOBILE_GRID.COLUMNS}, 1fr)`,
-                                    gridTemplateRows: `repeat(${MOBILE_GRID.ROWS_PER_SCREEN}, 1fr)`,
-                                }}
+                                key={pageKey} 
+                                className="flex-shrink-0 w-full px-6"
+                                style={{ width: `${100 / paginationData.totalPages}%` }}
                             >
-                                {(MOBILE_APPS as MobileAppConfig[])
-                                    .slice(
-                                        pageIndex * appsPerPage,
-                                        (pageIndex + 1) * appsPerPage
-                                    )
-                                    .map((app) => (
+                                <div
+                                    className="grid gap-4 h-full content-start pt-8"
+                                    style={{
+                                        gridTemplateColumns: `repeat(${MOBILE_GRID.COLUMNS}, 1fr)`,
+                                        gridTemplateRows: `repeat(${MOBILE_GRID.ROWS_PER_SCREEN}, 1fr)`,
+                                    }}
+                                >
+                                    {pageApps.map((app: MobileAppConfig) => (
                                         <MobileAppIcon
                                             key={app.id}
                                             app={app}
@@ -148,15 +186,16 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                                             disabled={isDragging}
                                         />
                                     ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </motion.div>
             </div>
 
             {/* Page Indicators */}
             <div className="absolute bottom-0 left-0 right-0">
-                {renderPageIndicators()}
+                {pageIndicators}
             </div>
 
             {/* Home Indicator */}

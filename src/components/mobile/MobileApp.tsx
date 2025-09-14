@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { MOBILE_APPS } from '@/utils/mobileConstants';
@@ -14,22 +14,31 @@ interface MobileAppProps {
     onHome: () => void;
 }
 
+// Loading fallback component
+const AppLoadingFallback = ({ appName }: { appName: string }) => (
+    <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="text-gray-600 dark:text-gray-400 text-sm">Loading {appName}...</div>
+        </div>
+    </div>
+);
+
 export default function MobileApp({ appId, onClose, onHome }: Readonly<MobileAppProps>) {
-    const [app, setApp] = useState<MobileAppConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const app = useMemo(() =>
+        MOBILE_APPS.find(a => a.id === appId) as MobileAppConfig | undefined,
+        [appId]
+    );
+
     useEffect(() => {
+        // Set notification flag
         sessionStorage.setItem('notification-shown-this-session', 'true');
-    }, []);
 
-    useEffect(() => {
-        const foundApp = MOBILE_APPS.find(a => a.id === appId) as MobileAppConfig | undefined;
-        setApp(foundApp || null);
-
-        // Simulate loading time for smooth transition
-        const timer = setTimeout(() => setIsLoading(false), 300);
+        const timer = setTimeout(() => setIsLoading(false), 150);
         return () => clearTimeout(timer);
-    }, [appId]);
+    }, []);
 
     const handleBack = useCallback(() => {
         onClose();
@@ -39,53 +48,88 @@ export default function MobileApp({ appId, onClose, onHome }: Readonly<MobileApp
         onHome();
     }, [onHome]);
 
+    // Early return for app not found
     if (!app) {
         return (
-            <div className="fixed inset-0 bg-black flex items-center justify-center">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="fixed inset-0 bg-black flex items-center justify-center"
+            >
                 <div className="text-white text-center">
-                    <div className="text-2xl mb-2">App Not Found</div>
+                    <div className="text-xl mb-3">App Not Found</div>
                     <button
                         onClick={handleHomeGesture}
-                        className="text-blue-400 underline"
+                        className="text-blue-400 underline text-sm px-4 py-2 rounded"
                     >
                         Return Home
                     </button>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     const AppComponent = app.component;
 
+    // Optimized animation variants
+    const slideVariants = {
+        initial: { x: '100%' },
+        animate: {
+            x: 0,
+            transition: {
+                type: 'spring' as const,
+                stiffness: 400,
+                damping: 25,
+                mass: 0.8
+            }
+        },
+        exit: {
+            x: '100%',
+            transition: {
+                type: 'spring' as const,
+                stiffness: 500,
+                damping: 30
+            }
+        }
+    };
+
+    const contentVariants = {
+        loading: { opacity: 0 },
+        loaded: {
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.2 }
+        }
+    };
+
     return (
         <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="fixed inset-0 bg-white dark:bg-black flex flex-col w-full"
         >
-
-
             {/* App Header */}
             <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 relative">
                 <button
                     onClick={handleBack}
-                    className="absolute left-4 flex items-center space-x-2 text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-2 py-1 transition-colors"
+                    className="absolute left-4 flex items-center space-x-2 text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-2 py-1 transition-colors duration-150"
                 >
-                    <ChevronLeft size={20} />
-                    <span>Back</span>
+                    <ChevronLeft size={18} />
+                    <span className="text-sm">Back</span>
                 </button>
 
                 <div className="flex items-center space-x-2">
                     <Image
                         src={app.icon}
                         alt={app.name}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6"
+                        width={20}
+                        height={20}
+                        className="w-5 h-5"
+                        priority 
                     />
-                    <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h1 className="text-base font-semibold text-gray-900 dark:text-white">
                         {app.name}
                     </h1>
                 </div>
@@ -97,28 +141,27 @@ export default function MobileApp({ appId, onClose, onHome }: Readonly<MobileApp
                     {isLoading ? (
                         <motion.div
                             key="loading"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900"
+                            variants={contentVariants}
+                            initial="loading"
+                            animate="loading"
+                            exit="loading"
                         >
-                            <div className="flex flex-col items-center space-y-4">
-                                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                                <div className="text-gray-600 dark:text-gray-400">Loading {app.name}...</div>
-                            </div>
+                            <AppLoadingFallback appName={app.name} />
                         </motion.div>
                     ) : (
                         <motion.div
                             key="content"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.1 }}
+                            variants={contentVariants}
+                            initial="loading"
+                            animate="loaded"
                             className="absolute inset-0"
                         >
                             <div className="h-full mobile-app-container">
-                                <MobileAppWrapper>
-                                    <AppComponent />
-                                </MobileAppWrapper>
+                                <Suspense fallback={<AppLoadingFallback appName={app.name} />}>
+                                    <MobileAppWrapper>
+                                        <AppComponent />
+                                    </MobileAppWrapper>
+                                </Suspense>
                             </div>
                         </motion.div>
                     )}
@@ -127,7 +170,7 @@ export default function MobileApp({ appId, onClose, onHome }: Readonly<MobileApp
 
             {/* Home Indicator */}
             <div className="flex justify-center pb-2">
-                <div className="w-32 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+                <div className="w-32 h-0.5 bg-gray-300 dark:bg-gray-600 rounded-full" />
             </div>
         </motion.div>
     );
