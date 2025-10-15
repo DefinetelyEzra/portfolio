@@ -126,7 +126,7 @@ export function useWindowManager({
       timeoutRef.current = setTimeout(() => {
         moveWindow(windowId, newPosition);
         onMove?.(newPosition);
-      }, 16); // ~60fps
+      }, 5); // ~adjust framerate when needed
     }
   }, [currentWindow, windowId, moveWindow, onMove, getConstraints]);
 
