@@ -112,7 +112,7 @@ const BreathingOrbs = memo<BreathingOrbsProps>(({
                     y: 75,
                     duration: 6.2,
                     delay: 1.8,
-                    opacity: [0.04, 0.10] as const,
+                    opacity: [0.04, 0.1] as const,
                     scale: [0.9, 1.2] as const,
                     colors: currentTheme === 'light'
                         ? ['#8B5CF6', 'rgba(255, 255, 255, 0.2)'] as const

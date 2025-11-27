@@ -46,7 +46,7 @@ export default function WidgetManager({
   useEffect(() => {
     // Extracted function to update widget positions
     const updateWidgetPositions = (newBounds: { width: number; height: number }) => {
-      widgets.forEach(widget => {
+      for (const widget of widgets) {
         const newPosition = getDefaultWidgetPosition(widget.type);
         const validatedPosition = validateWidgetPosition(newPosition, widget.size, newBounds);
 
@@ -54,7 +54,7 @@ export default function WidgetManager({
         if (validatedPosition.x !== widget.position.x || validatedPosition.y !== widget.position.y) {
           updateWidget(widget.id, { position: validatedPosition });
         }
-      });
+      }
     };
 
     const handleResize = () => {
@@ -71,17 +71,17 @@ export default function WidgetManager({
       }, 150);
     };
 
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       // Handle initial load
       handleResize();
 
       // Add event listeners
       window.addEventListener('resize', handleResize);
-      window.addEventListener('orientationchange', handleResize);
+      globalThis.window.addEventListener('orientationchange', handleResize);
 
       return () => {
         window.removeEventListener('resize', handleResize);
-        window.removeEventListener('orientationchange', handleResize);
+        globalThis.window.removeEventListener('orientationchange', handleResize);
         if (resizeTimeoutRef.current) {
           clearTimeout(resizeTimeoutRef.current);
         }
@@ -91,14 +91,14 @@ export default function WidgetManager({
 
   // Handle viewport changes for better responsive behavior
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
           // Recheck positions when page becomes visible again
           const newBounds = getContainerBounds();
           setContainerBounds(newBounds);
 
-          widgets.forEach(widget => {
+          for (const widget of widgets) {
             const validatedPosition = validateWidgetPosition(
               widget.position,
               widget.size,
@@ -108,7 +108,7 @@ export default function WidgetManager({
             if (validatedPosition.x !== widget.position.x || validatedPosition.y !== widget.position.y) {
               updateWidget(widget.id, { position: validatedPosition });
             }
-          });
+          }
         }
       };
 

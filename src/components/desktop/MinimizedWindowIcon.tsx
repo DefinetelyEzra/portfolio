@@ -59,7 +59,13 @@ export default function MinimizedWindowIcon({ app, onClick }: MinimizedWindowIco
 
                 {/* App Icon */}
                 <div className="relative w-6 h-6 rounded-md overflow-hidden mt-1">
-                    {!imageError ? (
+                    {imageError ? (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold">
+                                {app.name.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
+                    ) : (
                         <Image
                             src={app.icon}
                             alt={app.name}
@@ -68,12 +74,6 @@ export default function MinimizedWindowIcon({ app, onClick }: MinimizedWindowIco
                             onError={() => setImageError(true)}
                             sizes="24px"
                         />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                            <span className="text-white text-xs font-semibold">
-                                {app.name.charAt(0).toUpperCase()}
-                            </span>
-                        </div>
                     )}
                 </div>
 

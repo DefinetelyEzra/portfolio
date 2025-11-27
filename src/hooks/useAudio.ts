@@ -11,7 +11,7 @@ export const useAudio = (src: string, options: UseAudioOptions = {}) => {
   const { volume = 0.3, preload = true, loop = false } = options;
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       try {
         const audio = new Audio(src);
         audio.volume = volume;

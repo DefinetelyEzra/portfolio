@@ -66,7 +66,7 @@ export const useMobileStore = create<MobileStore>()(
                     const resolvedTheme = updatedSettings.theme === 'auto' ? state.systemTheme : updatedSettings.theme;
 
                     // If wallpaper changed, apply it immediately
-                    if (newSettings.wallpaper && typeof window !== 'undefined') {
+                    if (newSettings.wallpaper && globalThis.window !== undefined) {
                         document.body.style.backgroundImage = `url(${newSettings.wallpaper})`;
                         document.body.style.backgroundSize = 'cover';
                         document.body.style.backgroundPosition = 'center';

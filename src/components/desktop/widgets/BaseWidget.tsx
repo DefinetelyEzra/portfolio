@@ -23,7 +23,7 @@ export default function BaseWidget({
 
   // Responsive size adjustments based on screen size
   const responsiveStyles = useMemo(() => {
-    if (typeof window === 'undefined') {
+    if (globalThis.window === undefined) {
       return {};
     }
 

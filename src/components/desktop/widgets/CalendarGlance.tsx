@@ -317,7 +317,7 @@ export default function CalendarGlance({
                     ${isCurrentMonth ? styles.calendar.currentMonth : styles.calendar.otherMonth}
                     ${isTodayDate ? styles.calendar.today : ''}
                     ${hasEvents ? styles.calendar.dayHoverWithEvents : styles.calendar.dayHover}
-                    ${!canInteract ? 'cursor-default' : 'cursor-pointer'}
+                    ${canInteract ? 'cursor-pointer' : 'cursor-default'}
                   `}
                   disabled={!canInteract}
                   whileHover={canInteract ? { scale: 1.05 } : {}}

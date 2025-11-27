@@ -139,7 +139,7 @@ const GaugeDisplay = ({ currentSkill, displayLevel, isBoosting, styles }: GaugeD
       <AnimatePresence>
         {isBoosting && (
           <>
-            {[...Array(6)].map((_, i) => (
+            {[new Array(6)].map((_, i) => (
               <motion.div
                 key={`sparkle-${currentSkill.name}-${i}`}
                 className={`absolute ${styles.sparkle.color} text-xs pointer-events-none`}
@@ -174,7 +174,7 @@ const GaugeDisplay = ({ currentSkill, displayLevel, isBoosting, styles }: GaugeD
 export default function SkillMeter({ widget, onClose }: Readonly<BaseWidgetProps>) {
   const { currentTheme } = useDesktopStore();
   const styles = getThemeStyles(currentTheme);
-  
+
   const [currentSkill, setCurrentSkill] = useState<Skill>(SKILLS_DATA[0]);
   const [isBoosting, setIsBoosting] = useState(false);
   const [boostValue, setBoostValue] = useState(0);
@@ -196,11 +196,11 @@ export default function SkillMeter({ widget, onClose }: Readonly<BaseWidgetProps
   const availableSkills = useMemo(() => {
     if (settings.categories.includes('all')) return SKILLS_DATA;
     return SKILLS_DATA.filter(skill =>
-      settings.categories.some((cat: string) => skill.category === cat)
+      settings.categories.includes(skill.category)
     );
   }, [settings.categories]);
 
-  const rotationTimerRef = useRef<NodeJS.Timeout | null>(null); 
+  const rotationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const rotateSkill = useCallback(() => {
     if (availableSkills.length <= 1) return;
@@ -214,11 +214,11 @@ export default function SkillMeter({ widget, onClose }: Readonly<BaseWidgetProps
   useEffect(() => {
     if (settings.autoRotate && availableSkills.length > 1) {
       const timer = setInterval(rotateSkill, settings.rotationInterval * 1000);
-      rotationTimerRef.current = timer;  
+      rotationTimerRef.current = timer;
       return () => clearInterval(timer);
     } else if (rotationTimerRef.current) {
       clearInterval(rotationTimerRef.current);
-      rotationTimerRef.current = null;  
+      rotationTimerRef.current = null;
     }
   }, [settings.autoRotate, settings.rotationInterval, rotateSkill, availableSkills.length]);
 

@@ -237,7 +237,7 @@ export function getCurrentTime(timezone?: string): Date {
     );
 
     // Validate the resulting date
-    if (isNaN(timezoneDate.getTime())) {
+    if (Number.isNaN(timezoneDate.getTime())) {
       console.warn("Invalid date constructed for timezone:", timezone);
       return new Date(); // Fallback to system time
     }

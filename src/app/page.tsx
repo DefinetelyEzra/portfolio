@@ -33,12 +33,12 @@ export default function HomePage() {
   // System theme detection
   useEffect(() => {
     const detectSystemTheme = (e?: MediaQueryListEvent) => {
-      const isDark = e ? e.matches : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = e ? e.matches : globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
       setSystemTheme(isDark ? 'dark' : 'light');
     };
 
     detectSystemTheme();
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
     mediaQuery.addEventListener('change', detectSystemTheme);
 
     return () => mediaQuery.removeEventListener('change', detectSystemTheme);
@@ -54,7 +54,7 @@ export default function HomePage() {
     setMasterVolume(0.3); // 30% volume
     setAudioEnabled(true);
 
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)');
     const handleMotionChange = (e: MediaQueryListEvent) => setAudioEnabled(!e.matches);
 
     setAudioEnabled(!mediaQuery.matches); // Initial check

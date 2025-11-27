@@ -30,14 +30,14 @@ export function useLocalStorage<T>(
       setIsLoading(true);
       setError(null);
 
-      if (typeof window === 'undefined') {
+      if (globalThis.window === undefined) {
         setStoredValue(initialValue);
         setIsLoading(false);
         return;
       }
 
-      const item = window.localStorage.getItem(key);
-      
+      const item = globalThis.localStorage.getItem(key);
+
       if (item === null) {
         setStoredValue(initialValue);
       } else {
@@ -60,13 +60,15 @@ export function useLocalStorage<T>(
         setError(null);
 
         // Allow value to be a function so we have the same API as useState
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        
+        const valueToStore = typeof value === 'function'
+          ? (value as (val: T) => T)(storedValue)
+          : value;
+
         setStoredValue(valueToStore);
 
         // Save to localStorage
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        if (globalThis.window !== undefined) {
+          globalThis.localStorage.setItem(key, JSON.stringify(valueToStore));
         }
       } catch (err) {
         console.error(`Error setting localStorage key "${key}":`, err);
@@ -82,8 +84,8 @@ export function useLocalStorage<T>(
       setError(null);
       setStoredValue(initialValue);
 
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(key);
+      if (globalThis.window !== undefined) {
+        globalThis.localStorage.removeItem(key);
       }
     } catch (err) {
       console.error(`Error removing localStorage key "${key}":`, err);
@@ -111,7 +113,7 @@ export function useLocalStorageSync<T>(
 
   // Listen for storage events to sync across tabs
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key && e.newValue !== null) {
@@ -124,10 +126,10 @@ export function useLocalStorageSync<T>(
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    
+    globalThis.window.addEventListener('storage', handleStorageChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      globalThis.window.removeEventListener('storage', handleStorageChange);
     };
   }, [key, localStorage]);
 
@@ -152,23 +154,23 @@ export function useLocalStorageWithExpiry<T>(
       setIsLoading(true);
       setError(null);
 
-      if (typeof window === 'undefined') {
+      if (globalThis.window === undefined) {
         setStoredValue(initialValue);
         setIsLoading(false);
         return;
       }
 
-      const item = window.localStorage.getItem(key);
-      
+      const item = globalThis.localStorage.getItem(key);
+
       if (item === null) {
         setStoredValue(initialValue);
       } else {
         const { value, timestamp } = JSON.parse(item);
-        const now = new Date().getTime();
-        
+        const now = Date.now();
+
         if (now - timestamp > expirationMs) {
           // Expired, remove and use initial value
-          window.localStorage.removeItem(key);
+          globalThis.localStorage.removeItem(key);
           setStoredValue(initialValue);
         } else {
           setStoredValue(value);
@@ -189,16 +191,18 @@ export function useLocalStorageWithExpiry<T>(
       try {
         setError(null);
 
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        
+        const valueToStore = typeof value === 'function'
+          ? (value as (val: T) => T)(storedValue)
+          : value;
+
         setStoredValue(valueToStore);
 
-        if (typeof window !== 'undefined') {
+        if (globalThis.window !== undefined) {
           const dataWithTimestamp = {
             value: valueToStore,
-            timestamp: new Date().getTime(),
+            timestamp: Date.now(),
           };
-          window.localStorage.setItem(key, JSON.stringify(dataWithTimestamp));
+          globalThis.localStorage.setItem(key, JSON.stringify(dataWithTimestamp));
         }
       } catch (err) {
         console.error(`Error setting localStorage with expiry key "${key}":`, err);
@@ -214,8 +218,8 @@ export function useLocalStorageWithExpiry<T>(
       setError(null);
       setStoredValue(initialValue);
 
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(key);
+      if (globalThis.window !== undefined) {
+        globalThis.localStorage.removeItem(key);
       }
     } catch (err) {
       console.error(`Error removing localStorage with expiry key "${key}":`, err);

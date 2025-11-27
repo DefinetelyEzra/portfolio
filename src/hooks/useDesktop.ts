@@ -26,15 +26,15 @@ export function useDesktop(): DesktopHookReturn {
   const { setMobile } = useDesktopStore();
 
   const [viewport, setViewport] = useState<ViewportInfo>({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+    width: globalThis.window === undefined ? 1920 : window.innerWidth,
+    height: globalThis.window === undefined ? 1080 : window.innerHeight,
     isMobile: false,
     isTablet: false,
     isDesktop: true,
   });
 
   const [isOnline, setIsOnline] = useState<boolean>(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
+    typeof navigator === 'undefined' ? true : navigator.onLine
   );
 
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -42,7 +42,7 @@ export function useDesktop(): DesktopHookReturn {
   // Update viewport information
   const updateViewport = useCallback(() => {
     try {
-      if (typeof window === 'undefined') return;
+      if (globalThis.window === undefined) return;
 
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -60,7 +60,7 @@ export function useDesktop(): DesktopHookReturn {
 
       setViewport(newViewport);
       setMobile(isMobile);
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches;
       useDesktopStore.getState().setSystemTheme(isDark ? 'dark' : 'light');
     } catch (error) {
       console.error('Error updating viewport:', error);
@@ -166,7 +166,7 @@ export function useDesktop(): DesktopHookReturn {
   // Set up event listeners
   useEffect(() => {
     try {
-      if (typeof window === 'undefined') return;
+      if (globalThis.window === undefined) return;
 
       // Initial setup
       updateViewport();
@@ -174,16 +174,16 @@ export function useDesktop(): DesktopHookReturn {
 
       // Add event listeners
       window.addEventListener('resize', handleResize);
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
+      globalThis.window.addEventListener('online', handleOnline);
+      globalThis.window.addEventListener('offline', handleOffline);
       document.addEventListener('fullscreenchange', handleFullscreenChange);
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       // Cleanup
       return () => {
         window.removeEventListener('resize', handleResize);
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
+        globalThis.window.removeEventListener('online', handleOnline);
+        globalThis.window.removeEventListener('offline', handleOffline);
         document.removeEventListener('fullscreenchange', handleFullscreenChange);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
@@ -212,11 +212,11 @@ export function useDesktop(): DesktopHookReturn {
       });
     };
 
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       // Remove the duplicate resize listener setup
       window.addEventListener('resize', debouncedResize, { passive: true });
-      window.addEventListener('online', handleOnline, { passive: true });
-      window.addEventListener('offline', handleOffline, { passive: true });
+      globalThis.window.addEventListener('online', handleOnline, { passive: true });
+      globalThis.window.addEventListener('offline', handleOffline, { passive: true });
       document.addEventListener('fullscreenchange', handleFullscreenChange, { passive: true });
       document.addEventListener('visibilitychange', handleVisibilityChange, { passive: true });
 
@@ -224,8 +224,8 @@ export function useDesktop(): DesktopHookReturn {
         clearTimeout(timeoutId);
         cancelAnimationFrame(rafId);
         window.removeEventListener('resize', debouncedResize);
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
+        globalThis.window.removeEventListener('online', handleOnline);
+        globalThis.window.removeEventListener('offline', handleOffline);
         document.removeEventListener('fullscreenchange', handleFullscreenChange);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       };

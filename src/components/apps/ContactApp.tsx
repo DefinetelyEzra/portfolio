@@ -232,7 +232,7 @@ export default function ContactApp() {
   };
 
   return (
-    <div className={`h-full flex flex-col bg-gradient-to-br ${styles.background} p-4`}>
+    <div className={`min-h-screen w-full flex flex-col bg-gradient-to-br ${styles.background} p-4`}>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className={`p-4 border-b ${styles.headerBorder}`}>

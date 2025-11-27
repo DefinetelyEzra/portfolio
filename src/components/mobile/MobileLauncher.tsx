@@ -159,7 +159,7 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                     dragConstraints={constraintsRef}
                     onDragStart={() => setIsDragging(true)}
                     onDragEnd={handleDragEnd}
-                    animate={{ x: -currentPage * (typeof window !== 'undefined' ? window.innerWidth : 375) }}
+                    animate={{ x: -currentPage * ( globalThis.window === undefined ? 375 : window.innerWidth) }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     style={{ width: `${paginationData.totalPages * 100}%` }}
                 >

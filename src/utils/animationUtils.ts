@@ -124,7 +124,7 @@ export const calculateAnimationDuration = memoize(
         );
 
         const scaleFactor = distance / 500;
-        return Math.max(0.4, Math.min(1.0, baseDuration * scaleFactor));
+        return Math.max(0.4, Math.min(1, baseDuration * scaleFactor));
     },
     (coordinates: AnimationCoordinates, baseDuration: number = 0.6) => `${JSON.stringify(coordinates)}-${baseDuration}`
 );

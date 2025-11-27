@@ -12,7 +12,7 @@ function isTopmostWindow(currentZ: number): boolean {
   const windows = Array.from(document.querySelectorAll('[data-window]'));
   if (!windows.length) return true;
   const maxZ = Math.max(
-    ...windows.map(el => parseInt(el.getAttribute('data-z-index') || '0'))
+    ...windows.map(el => Number.parseInt((el as HTMLElement).dataset.zIndex || '0'))
   );
   return currentZ === maxZ;
 }

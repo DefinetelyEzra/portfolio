@@ -207,7 +207,7 @@ export default function AnalogClock(
               const sin = Math.sin(angleRad);
               const cos = Math.cos(angleRad);
 
-              if (isNaN(sin) || isNaN(cos)) {
+              if (Number.isNaN(sin) || Number.isNaN(cos)) {
                 return null;
               }
 
@@ -216,7 +216,7 @@ export default function AnalogClock(
               const x2 = 60 + sin * 52;
               const y2 = 60 - cos * 52;
 
-              if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+              if (Number.isNaN(x1) || Number.isNaN(y1) || Number.isNaN(x2) || Number.isNaN(y2)) {
                 return null;
               }
 
@@ -237,14 +237,14 @@ export default function AnalogClock(
             <motion.line
               x1="60"
               y1="60"
-              x2={isNaN(hourAngle) ? 60 : 60 + Math.sin((hourAngle * Math.PI) / 180) * 25}
-              y2={isNaN(hourAngle) ? 60 : 60 - Math.cos((hourAngle * Math.PI) / 180) * 25}
+              x2={Number.isNaN(hourAngle) ? 60 : 60 + Math.sin((hourAngle * Math.PI) / 180) * 25}
+              y2={Number.isNaN(hourAngle) ? 60 : 60 - Math.cos((hourAngle * Math.PI) / 180) * 25}
               stroke={styles.hands.hour}
               strokeWidth="3"
               strokeLinecap="round"
               animate={{
-                x2: isNaN(hourAngle) ? 60 : 60 + Math.sin((hourAngle * Math.PI) / 180) * 25,
-                y2: isNaN(hourAngle) ? 60 : 60 - Math.cos((hourAngle * Math.PI) / 180) * 25,
+                x2: Number.isNaN(hourAngle) ? 60 : 60 + Math.sin((hourAngle * Math.PI) / 180) * 25,
+                y2: Number.isNaN(hourAngle) ? 60 : 60 - Math.cos((hourAngle * Math.PI) / 180) * 25,
               }}
               transition={{ type: "spring", damping: 20, stiffness: 100 }}
             />
@@ -253,14 +253,14 @@ export default function AnalogClock(
             <motion.line
               x1="60"
               y1="60"
-              x2={isNaN(minuteAngle) ? 60 : 60 + Math.sin((minuteAngle * Math.PI) / 180) * 35}
-              y2={isNaN(minuteAngle) ? 60 : 60 - Math.cos((minuteAngle * Math.PI) / 180) * 35}
+              x2={Number.isNaN(minuteAngle) ? 60 : 60 + Math.sin((minuteAngle * Math.PI) / 180) * 35}
+              y2={Number.isNaN(minuteAngle) ? 60 : 60 - Math.cos((minuteAngle * Math.PI) / 180) * 35}
               stroke={styles.hands.minute}
               strokeWidth="2"
               strokeLinecap="round"
               animate={{
-                x2: isNaN(minuteAngle) ? 60 : 60 + Math.sin((minuteAngle * Math.PI) / 180) * 35,
-                y2: isNaN(minuteAngle) ? 60 : 60 - Math.cos((minuteAngle * Math.PI) / 180) * 35,
+                x2: Number.isNaN(minuteAngle) ? 60 : 60 + Math.sin((minuteAngle * Math.PI) / 180) * 35,
+                y2: Number.isNaN(minuteAngle) ? 60 : 60 - Math.cos((minuteAngle * Math.PI) / 180) * 35,
               }}
               transition={{ type: "spring", damping: 20, stiffness: 100 }}
             />
@@ -270,14 +270,14 @@ export default function AnalogClock(
               <motion.line
                 x1="60"
                 y1="60"
-                x2={isNaN(secondAngle) ? 60 : 60 + Math.sin((secondAngle * Math.PI) / 180) * 40}
-                y2={isNaN(secondAngle) ? 60 : 60 - Math.cos((secondAngle * Math.PI) / 180) * 40}
+                x2={Number.isNaN(secondAngle) ? 60 : 60 + Math.sin((secondAngle * Math.PI) / 180) * 40}
+                y2={Number.isNaN(secondAngle) ? 60 : 60 - Math.cos((secondAngle * Math.PI) / 180) * 40}
                 stroke={styles.hands.second}
                 strokeWidth="1"
                 strokeLinecap="round"
                 animate={{
-                  x2: isNaN(secondAngle) ? 60 : 60 + Math.sin((secondAngle * Math.PI) / 180) * 40,
-                  y2: isNaN(secondAngle) ? 60 : 60 - Math.cos((secondAngle * Math.PI) / 180) * 40,
+                  x2: Number.isNaN(secondAngle) ? 60 : 60 + Math.sin((secondAngle * Math.PI) / 180) * 40,
+                  y2: Number.isNaN(secondAngle) ? 60 : 60 - Math.cos((secondAngle * Math.PI) / 180) * 40,
                 }}
                 transition={{ type: "spring", damping: 10, stiffness: 200 }}
               />

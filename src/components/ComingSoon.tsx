@@ -70,7 +70,7 @@ export default function ComingSoon({
         if (!targetDate) return;
 
         const updateTimer = () => {
-            const now = new Date().getTime();
+            const now = Date.now();
             const target = targetDate.getTime();
             const difference = target - now;
 

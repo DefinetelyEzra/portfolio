@@ -123,7 +123,7 @@ export default function QuoteGenerator({
         setIsRefreshing(false);
 
         // Add a subtle notification for easter eggs
-        if (isEasterEgg && typeof window !== 'undefined') {
+        if (isEasterEgg && globalThis.window !== undefined) {
           // Could trigger a desktop notification here if needed
           console.log('🎉 Easter egg quote discovered!');
         }

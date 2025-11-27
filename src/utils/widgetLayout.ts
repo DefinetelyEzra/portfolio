@@ -8,7 +8,7 @@ export function getWidgetPosition(widgetType: string): WidgetPosition {
 // Resized handling 
 export function getContainerBounds(): { width: number; height: number } {
     try {
-        if (typeof window !== 'undefined') {
+        if ( globalThis.window !== undefined) {
             return {
                 width: window.innerWidth,
                 height: window.innerHeight,

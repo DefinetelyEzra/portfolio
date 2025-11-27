@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         // Create transporter
         const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
-            port: parseInt(process.env.EMAIL_PORT || '587'),
+            port: Number.parseInt(process.env.EMAIL_PORT || '587'),
             secure: false, // true for 465, false for other ports
             auth: {
                 user: process.env.EMAIL_USER,
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
             <div style="margin-bottom: 20px;">
               <h3 style="color: #555; margin-bottom: 10px;">Message:</h3>
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff;">
-                ${message.replace(/\n/g, '<br>')}
+                ${message.replaceAll('\n', '<br>')}
               </div>
             </div>
 

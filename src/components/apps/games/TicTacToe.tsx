@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { useAudioContext } from '@/components/ui/AudioProvider';
 
 const TicTacToe = () => {
-    const [tictactoe, setTictactoe] = useState<(string | null)[]>(Array(9).fill(null));
+    const [tictactoe, setTictactoe] = useState<(string | null)[]>(new Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
     const [xWins, setXWins] = useState(0); // Track X wins for the session
     const [oWins, setOWins] = useState(0); // Track O wins for the session
@@ -31,7 +31,7 @@ const TicTacToe = () => {
 
         // Check for winner after move
         const winner = checkWinner(newBoard);
-        const isBoardFull = newBoard.every(cell => cell);
+        const isBoardFull = newBoard.every(Boolean);
 
         if (winner) {
             setGameResult('victory');
@@ -68,7 +68,7 @@ const TicTacToe = () => {
     };
 
     const resetTicTacToe = () => {
-        setTictactoe(Array(9).fill(null));
+        setTictactoe(new Array(9).fill(null));
         setIsXNext(true);
         setGameResult(null); // Reset game result
     };
@@ -110,7 +110,7 @@ const TicTacToe = () => {
             <div className="text-center">
                 {(() => {
                     const winner = checkWinner(tictactoe);
-                    const isBoardFull = tictactoe.every(cell => cell);
+                    const isBoardFull = tictactoe.every(Boolean);
 
                     if (winner) {
                         return (

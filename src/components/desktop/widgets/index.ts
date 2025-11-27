@@ -17,13 +17,11 @@ export const WIDGET_REGISTRY = {
 export type WidgetType = keyof typeof WIDGET_REGISTRY;
 
 // Export all widget components
-export {
-  AnalogClock,
-  CalendarGlance,
-  SearchSpotlight,
-  SkillMeter,
-  QuoteGenerator,
-};
+export { default as AnalogClock } from './AnalogClock';
+export { default as CalendarGlance } from './CalendarGlance';
+export { default as SearchSpotlight } from './SearchSpotlight';
+export { default as SkillMeter } from './SkillMeter';
+export { default as QuoteGenerator } from './QuoteGenerator';
 
 // Export utility components
 export { default as BaseWidget } from './BaseWidget';

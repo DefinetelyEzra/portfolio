@@ -56,10 +56,17 @@ export default function DockIcon({ app, isActive, onClick, onContextMenu }: Read
       >
         {/* Icon Background */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg" />
-        
+
         {/* Icon Image or Fallback */}
         <div className="relative w-12 h-12 rounded-xl overflow-hidden">
-          {!imageError ? (
+          {imageError ? (
+            // Fallback gradient icon with first letter
+            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white text-xl font-semibold">
+                {app.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          ) : (
             <Image
               src={app.icon}
               alt={app.name}
@@ -68,13 +75,6 @@ export default function DockIcon({ app, isActive, onClick, onContextMenu }: Read
               onError={() => setImageError(true)}
               sizes="48px"
             />
-          ) : (
-            // Fallback gradient icon with first letter
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white text-xl font-semibold">
-                {app.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
           )}
         </div>
 

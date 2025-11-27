@@ -5,13 +5,13 @@ import { useAudioContext } from '@/components/ui/AudioProvider';
 const MOBILE_BREAKPOINT = 768;
 
 const isMobile = (): boolean => {
-    if (typeof window === 'undefined') return false;
+    if (globalThis.window === undefined) return false;
     return window.innerWidth < MOBILE_BREAKPOINT;
 };
 
 const isTouchDevice = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (globalThis.window === undefined) return false;
+    return 'ontouchstart' in globalThis || navigator.maxTouchPoints > 0;
 };
 interface SnakeGameState {
   snake: { x: number; y: number }[];
@@ -191,8 +191,8 @@ const SnakeGame = () => {
 
   useEffect(() => {
     if (!deviceIsTouchDevice) {
-      window.addEventListener('keydown', handleKeyPress);
-      return () => window.removeEventListener('keydown', handleKeyPress);
+      globalThis.addEventListener('keydown', handleKeyPress);
+      return () => globalThis.removeEventListener('keydown', handleKeyPress);
     }
   }, [handleKeyPress, deviceIsTouchDevice]);
 

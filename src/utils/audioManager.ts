@@ -6,8 +6,8 @@ export class AudioManager {
   private masterVolume: number = 0.3;
 
   private constructor() {
-    if (typeof window !== 'undefined') {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (globalThis.window !== undefined) {
+      const prefersReducedMotion = globalThis.window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       this.isEnabled = !prefersReducedMotion;
     }
   }
@@ -20,7 +20,7 @@ export class AudioManager {
   }
 
   public preloadAudio(id: string, src: string): void {
-    if (!this.isEnabled || typeof window === 'undefined') return;
+    if (!this.isEnabled || globalThis.window === undefined) return;
 
     try {
       if (!this.audioCache.has(id)) {
@@ -76,20 +76,20 @@ export class AudioManager {
   public setEnabled(enabled: boolean): void {
     this.isEnabled = enabled;
     if (!enabled) {
-      this.audioCache.forEach(audio => {
+      for (const audio of this.audioCache.values()) {
         try {
           audio.pause();
           audio.currentTime = 0;
         } catch (error) {
           console.warn('Error stopping audio:', error);
         }
-      });
+      }
     }
   }
 
   // Add this method to sync with desktopStore
   public syncWithStore() {
-    const isSoundEnabled = useDesktopStore.getState().settings.soundEnabled; 
+    const isSoundEnabled = useDesktopStore.getState().settings.soundEnabled;
     if (this.isEnabled !== isSoundEnabled) {
       this.setEnabled(isSoundEnabled);
     }
@@ -139,13 +139,13 @@ export class AudioManager {
 
   public setMasterVolume(volume: number): void {
     this.masterVolume = Math.max(0, Math.min(1, volume));
-    this.audioCache.forEach(audio => {
+    for (const audio of this.audioCache.values()) {
       try {
         audio.volume = this.masterVolume;
       } catch (error) {
         console.warn('Error setting audio volume:', error);
       }
-    });
+    }
   }
 
   public isAudioEnabled(): boolean {
@@ -153,14 +153,14 @@ export class AudioManager {
   }
 
   public cleanup(): void {
-    this.audioCache.forEach(audio => {
+    for (const audio of this.audioCache.values()) {
       try {
         audio.pause();
         audio.src = '';
       } catch (error) {
         console.warn('Error cleaning up audio:', error);
       }
-    });
+    }
     this.audioCache.clear();
   }
 }

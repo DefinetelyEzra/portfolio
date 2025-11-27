@@ -52,10 +52,13 @@ export function useWindowManager({
   );
 
   // Memoized constraints with viewport resize listener
-  const [viewport, setViewport] = useState({ width: typeof window !== 'undefined' ? window.innerWidth : 1920, height: typeof window !== 'undefined' ? window.innerHeight : 1080 });
-
+  const [viewport, setViewport] = useState({
+    // Is the window object defined?
+    width: globalThis.window === undefined ? 1920 : window.innerWidth,
+    height: globalThis.window === undefined ? 1080 : window.innerHeight
+  });
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (globalThis === undefined) return;
 
     const handleResize = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
