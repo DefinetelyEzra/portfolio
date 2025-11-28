@@ -2,7 +2,7 @@
  * Animation utilities for macOS-style window effects
  */
 
-import { memoize } from 'lodash';
+import { memoize } from 'lodash-es';
 
 export interface AnimationCoordinates {
     startX: number;

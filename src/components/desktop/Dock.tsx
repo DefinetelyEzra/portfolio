@@ -45,6 +45,9 @@ export default function Dock() {
         }
     }, [windows, restoreWindow, openWindow]);
 
+    // Memoize dock apps to prevent re-renders
+    const dockApps = useMemo(() => DOCK_APPS, []);
+
     return (
         <motion.div
             ref={dockRef}
@@ -55,7 +58,7 @@ export default function Dock() {
             onMouseLeave={() => setHoveredIndex(null)}
         >
             <div className="flex items-end space-x-1 px-3 py-2 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
-                {DOCK_APPS.map((app, index) => (
+                {dockApps.map((app, index) => (
                     <motion.div
                         key={app.id}
                         className="relative"
@@ -69,7 +72,7 @@ export default function Dock() {
                     >
                         <DockIcon
                             app={app}
-                            isActive={activeApps.has(app.id)} // Changed from includes to has
+                            isActive={activeApps.has(app.id)}
                             onClick={() => handleIconClick(app.id)}
                             onContextMenu={(e) => e.preventDefault()}
                         />
@@ -77,7 +80,7 @@ export default function Dock() {
                 ))}
 
                 {minimizedWindows.map((window) => {
-                    const app = DOCK_APPS.find(a => a.id === window.appId);
+                    const app = dockApps.find(a => a.id === window.appId);
                     if (!app) return null;
 
                     return (
@@ -89,7 +92,7 @@ export default function Dock() {
                     );
                 })}
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent rounded-2xl blur-xl -z-10" />
+            <div className="absolute inset-0 bg-linear-to-t from-blue-500/20 to-transparent rounded-2xl blur-xl -z-10" />
         </motion.div>
     );
 }

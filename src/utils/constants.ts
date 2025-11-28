@@ -1,20 +1,28 @@
 import dynamic from 'next/dynamic';
 import { AppConfig } from '@/types/desktop';
 
-// Lazy load components to improve initial bundle size
-const ProjectsApp = dynamic(() => import('@/components/apps/ProjectsApp'), { ssr: false });
-const AboutApp = dynamic(() => import('@/components/apps/AboutApp'), { ssr: false });
-const SkillsApp = dynamic(() => import('@/components/apps/SkillsApp'), { ssr: false });
-const ContactApp = dynamic(() => import('@/components/apps/ContactApp'), { ssr: false });
-const SettingsApp = dynamic(() => import('@/components/apps/SettingsApp'), { ssr: false });
-const ExtrasApp = dynamic(() => import('@/components/apps/ExtrasApp'), { ssr: false });
+// Factory function for lazy loading with consistent options
+const createLazyApp = (importFn: () => Promise<any>) =>
+  dynamic(importFn, {
+    ssr: false,
+    loading: () => null // Simple loading handled in Window component
+  });
 
-export const DOCK_APPS: AppConfig[] = [
+// Lazy load components only when needed using factory functions
+const getProjectsApp = () => createLazyApp(() => import('@/components/apps/ProjectsApp'));
+const getAboutApp = () => createLazyApp(() => import('@/components/apps/AboutApp'));
+const getSkillsApp = () => createLazyApp(() => import('@/components/apps/SkillsApp'));
+const getContactApp = () => createLazyApp(() => import('@/components/apps/ContactApp'));
+const getSettingsApp = () => createLazyApp(() => import('@/components/apps/SettingsApp'));
+const getExtrasApp = () => createLazyApp(() => import('@/components/apps/ExtrasApp'));
+
+// Memoized app configurations to prevent recreation
+export const DOCK_APPS: readonly AppConfig[] = [
   {
     id: 'projects',
     name: 'Projects',
     icon: '/icons/projects.svg',
-    component: ProjectsApp,
+    component: getProjectsApp(), // Component loaded only when app is opened
     defaultSize: { width: 950, height: 800 },
     minSize: { width: 600, height: 400 },
     resizable: true,
@@ -24,7 +32,7 @@ export const DOCK_APPS: AppConfig[] = [
     id: 'about',
     name: 'About Me',
     icon: '/icons/aboutme.svg',
-    component: AboutApp,
+    component: getAboutApp(),
     defaultSize: { width: 800, height: 600 },
     minSize: { width: 500, height: 400 },
     resizable: true,
@@ -34,7 +42,7 @@ export const DOCK_APPS: AppConfig[] = [
     id: 'skills',
     name: 'Skills',
     icon: '/icons/skills.png',
-    component: SkillsApp,
+    component: getSkillsApp(),
     defaultSize: { width: 1000, height: 650 },
     minSize: { width: 600, height: 450 },
     resizable: true,
@@ -44,7 +52,7 @@ export const DOCK_APPS: AppConfig[] = [
     id: 'contact',
     name: 'Contact',
     icon: '/icons/contacts.svg',
-    component: ContactApp,
+    component: getContactApp(),
     defaultSize: { width: 700, height: 500 },
     minSize: { width: 500, height: 400 },
     resizable: true,
@@ -54,7 +62,7 @@ export const DOCK_APPS: AppConfig[] = [
     id: 'settings',
     name: 'Settings',
     icon: '/icons/settings.svg',
-    component: SettingsApp,
+    component: getSettingsApp(),
     defaultSize: { width: 1000, height: 800 },
     minSize: { width: 500, height: 400 },
     resizable: true,
@@ -64,14 +72,15 @@ export const DOCK_APPS: AppConfig[] = [
     id: 'extras',
     name: 'Extras',
     icon: '/icons/extras.svg',
-    component: ExtrasApp,
+    component: getExtrasApp(),
     defaultSize: { width: 850, height: 700 },
     minSize: { width: 500, height: 400 },
     resizable: true,
     draggable: true,
   },
-];
+] as const;
 
+// Predefined notification messages
 export const NOTIFICATION_MESSAGES = [
   {
     title: 'Welcome!',
@@ -95,12 +104,32 @@ export const NOTIFICATION_MESSAGES = [
   },
 ] as const;
 
+// Breakpoint constants
 export const MOBILE_BREAKPOINT = 768;
 export const TABLET_BREAKPOINT = 1024;
 
+// Window constraints with safe window access
 export const WINDOW_CONSTRAINTS = {
   minX: 0,
   minY: 0,
-  maxX: () => window.innerWidth - 300,
-  maxY: () => window.innerHeight - 200,
+  maxX: () => (globalThis.window === undefined ? 1024 : window.innerWidth - 300),
+  maxY: () => (globalThis.window === undefined ? 768 : window.innerHeight - 200),
 } as const;
+
+// Export app IDs as constants for type safety
+export const APP_IDS = {
+  PROJECTS: 'projects',
+  ABOUT: 'about',
+  SKILLS: 'skills',
+  CONTACT: 'contact',
+  SETTINGS: 'settings',
+  EXTRAS: 'extras',
+} as const;
+
+// Helper to get app by ID
+export const getAppById = (id: string) =>
+  DOCK_APPS.find(app => app.id === id);
+
+// Helper to check if app exists
+export const isValidAppId = (id: string): id is AppConfig['id'] =>
+  DOCK_APPS.some(app => app.id === id);

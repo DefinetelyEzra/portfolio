@@ -197,6 +197,27 @@ body {
   perspective: 1000px;
 }
 
+/* Smooth window operations */
+.window-resizing {
+  transition: none !important;
+}
+
+/* Only apply backdrop blur to window header, not the whole window */
+.window-header-blur {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Prevent transitions during window operations */
+[data-window] {
+  transition: none !important;
+}
+
+/* Only animate on initial mount/unmount via Motion */
+[data-window] > * {
+  transition: none;
+}
+
 /* Widget Animations */
 @keyframes widget-pulse {
   0%, 100% {

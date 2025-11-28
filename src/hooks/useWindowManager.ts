@@ -34,6 +34,15 @@ interface ResizeState {
   direction: string;
 }
 
+// Constants
+const DOCK_HEIGHT = 80;
+const HEADER_HEIGHT = 52;
+const MIN_VISIBLE_WIDTH = 100;
+const MIN_VISIBLE_HEIGHT = HEADER_HEIGHT;
+const MIN_WINDOW_WIDTH = 300;
+const MIN_WINDOW_HEIGHT = 200;
+const RESIZE_THROTTLE_MS = 16; // ~60fps
+
 export function useWindowManager({
   windowId,
   onFocus,
@@ -43,7 +52,8 @@ export function useWindowManager({
   const { windows, focusWindow, moveWindow, resizeWindow } = useDesktopStore();
   const dragStateRef = useRef<DragState | null>(null);
   const resizeStateRef = useRef<ResizeState | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const lastResizeTimeRef = useRef<number>(0); // For throttling
 
   // Memoized current window
   const currentWindow = useMemo(() =>
@@ -51,36 +61,37 @@ export function useWindowManager({
     [windows, windowId]
   );
 
-  // Memoized constraints with viewport resize listener
-  const [viewport, setViewport] = useState({
-    // Is the window object defined?
+  // Simple viewport tracking
+  const [viewport, setViewport] = useState(() => ({
     width: globalThis.window === undefined ? 1920 : window.innerWidth,
     height: globalThis.window === undefined ? 1080 : window.innerHeight
-  });
+  }));
+
   useEffect(() => {
-    if (globalThis === undefined) return;
+    if (globalThis.window === undefined) return;
 
     const handleResize = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Memoized constraints calculation
   const getConstraints = useMemo((): WindowConstraints => {
-    const dockHeight = 80;
-    const headerHeight = 52;
-    const minVisibleWidth = 100;
-    const minVisibleHeight = headerHeight;
+    const windowWidth = currentWindow?.size.width || 300;
 
     return {
-      minX: -(currentWindow?.size.width || 300) + minVisibleWidth,
+      minX: -windowWidth + MIN_VISIBLE_WIDTH,
       minY: 0,
-      maxX: viewport.width - minVisibleWidth,
-      maxY: viewport.height - dockHeight - minVisibleHeight,
+      maxX: viewport.width - MIN_VISIBLE_WIDTH,
+      maxY: viewport.height - DOCK_HEIGHT - MIN_VISIBLE_HEIGHT,
     };
-  }, [currentWindow?.size, viewport.width, viewport.height]);
+  }, [currentWindow?.size.width, viewport.width, viewport.height]);
 
   // Handle window focus
   const handleFocus = useCallback(() => {
@@ -89,15 +100,12 @@ export function useWindowManager({
   }, [windowId, focusWindow, onFocus]);
 
   // Handle drag start
-  const handleDragStart = useCallback((event: MouseEvent | TouchEvent) => {
+  const handleDragStart = useCallback((event: MouseEvent) => {
     if (!currentWindow || currentWindow.isMaximized) return;
 
-    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
-
     dragStateRef.current = {
-      startX: clientX,
-      startY: clientY,
+      startX: event.clientX,
+      startY: event.clientY,
       startWindowX: currentWindow.position.x,
       startWindowY: currentWindow.position.y,
     };
@@ -105,45 +113,53 @@ export function useWindowManager({
     handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Handle drag with debounced updates
-  const handleDrag = useCallback((event: MouseEvent | TouchEvent) => {
+  // Optimized drag handler with RAF for smooth performance
+  const handleDrag = useCallback((event: MouseEvent) => {
     if (!dragStateRef.current || !currentWindow || currentWindow.isMaximized) return;
 
-    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+    // Cancel any pending RAF
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+    }
 
-    const deltaX = clientX - dragStateRef.current.startX;
-    const deltaY = clientY - dragStateRef.current.startY;
+    // Use RAF for smooth animation
+    rafIdRef.current = requestAnimationFrame(() => {
+      const deltaX = event.clientX - dragStateRef.current!.startX;
+      const deltaY = event.clientY - dragStateRef.current!.startY;
 
-    const newX = dragStateRef.current.startWindowX + deltaX;
-    const newY = dragStateRef.current.startWindowY + deltaY;
+      const newX = dragStateRef.current!.startWindowX + deltaX;
+      const newY = dragStateRef.current!.startWindowY + deltaY;
 
-    const constraints = getConstraints;
-    const constrainedX = Math.max(constraints.minX, Math.min(constraints.maxX, newX));
-    const constrainedY = Math.max(constraints.minY, Math.min(constraints.maxY, newY));
+      // Apply constraints
+      const constrainedX = Math.max(
+        getConstraints.minX,
+        Math.min(getConstraints.maxX, newX)
+      );
+      const constrainedY = Math.max(
+        getConstraints.minY,
+        Math.min(getConstraints.maxY, newY)
+      );
 
-    const newPosition = { x: constrainedX, y: constrainedY };
-
-    if (constrainedX !== currentWindow.position.x || constrainedY !== currentWindow.position.y) {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
+      // Only update if position actually changed
+      if (constrainedX !== currentWindow.position.x || constrainedY !== currentWindow.position.y) {
+        const newPosition = { x: constrainedX, y: constrainedY };
         moveWindow(windowId, newPosition);
         onMove?.(newPosition);
-      }, 5); // ~adjust framerate when needed
-    }
+      }
+    });
   }, [currentWindow, windowId, moveWindow, onMove, getConstraints]);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
     dragStateRef.current = null;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
   }, []);
 
   // Handle resize start
-  const handleResizeStart = useCallback((
-    event: MouseEvent,
-    direction: 'se' | 'e' | 's' | 'sw' | 'w' | 'n' | 'ne' | 'nw' = 'se'
-  ) => {
+  const handleResizeStart = useCallback((event: MouseEvent) => {
     if (!currentWindow) return;
 
     event.preventDefault();
@@ -156,74 +172,61 @@ export function useWindowManager({
       startHeight: currentWindow.size.height,
       startWindowX: currentWindow.position.x,
       startWindowY: currentWindow.position.y,
-      direction,
+      direction: 'se',
     };
 
+    lastResizeTimeRef.current = 0; // Reset throttle timer
     handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Handle resize with debounced updates
+  // Optimized resize handler with throttling + RAF
   const handleResize = useCallback((event: MouseEvent) => {
     if (!resizeStateRef.current || !currentWindow) return;
 
-    const deltaX = event.clientX - resizeStateRef.current.startX;
-    const deltaY = event.clientY - resizeStateRef.current.startY;
-
-    let newWidth = resizeStateRef.current.startWidth;
-    let newHeight = resizeStateRef.current.startHeight;
-    let newX = resizeStateRef.current.startWindowX;
-    let newY = resizeStateRef.current.startWindowY;
-
-    const { direction } = resizeStateRef.current;
-
-    if (direction.includes('e')) {
-      newWidth = Math.max(300, resizeStateRef.current.startWidth + deltaX);
+    const now = performance.now();
+    if (now - lastResizeTimeRef.current < RESIZE_THROTTLE_MS) {
+      // Skip if throttled
+      return;
     }
-    if (direction.includes('w')) {
-      const widthDelta = -deltaX;
-      newWidth = Math.max(300, resizeStateRef.current.startWidth + widthDelta);
-      if (newWidth > 300) {
-        newX = resizeStateRef.current.startWindowX - widthDelta;
-      }
-    }
-    if (direction.includes('s')) {
-      newHeight = Math.max(200, resizeStateRef.current.startHeight + deltaY);
-    }
-    if (direction.includes('n')) {
-      const heightDelta = -deltaY;
-      newHeight = Math.max(200, resizeStateRef.current.startHeight + heightDelta);
-      if (newHeight > 200) {
-        newY = resizeStateRef.current.startWindowY - heightDelta;
-      }
+    lastResizeTimeRef.current = now;
+
+    // Cancel any pending RAF
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
     }
 
-    const maxWidth = viewport.width - newX;
-    const maxHeight = viewport.height - newY - 80;
+    rafIdRef.current = requestAnimationFrame(() => {
+      const deltaX = event.clientX - resizeStateRef.current!.startX;
+      const deltaY = event.clientY - resizeStateRef.current!.startY;
 
-    newWidth = Math.min(newWidth, Math.max(300, maxWidth));
-    newHeight = Math.min(newHeight, Math.max(200, maxHeight));
+      let newWidth = Math.max(MIN_WINDOW_WIDTH, resizeStateRef.current!.startWidth + deltaX);
+      let newHeight = Math.max(MIN_WINDOW_HEIGHT, resizeStateRef.current!.startHeight + deltaY);
 
-    const newSize = { width: newWidth, height: newHeight };
-    const newPosition = { x: newX, y: newY };
+      // Apply viewport constraints
+      const maxWidth = viewport.width - currentWindow.position.x;
+      const maxHeight = viewport.height - currentWindow.position.y - DOCK_HEIGHT;
 
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
+      newWidth = Math.min(newWidth, Math.max(MIN_WINDOW_WIDTH, maxWidth));
+      newHeight = Math.min(newHeight, Math.max(MIN_WINDOW_HEIGHT, maxHeight));
+
+      const newSize = { width: newWidth, height: newHeight };
+
+      // Update size
       resizeWindow(windowId, newSize);
-      if (newX !== currentWindow.position.x || newY !== currentWindow.position.y) {
-        moveWindow(windowId, newPosition);
-        onMove?.(newPosition);
-      }
       onResize?.(newSize);
-    }, 16); // ~60fps
-  }, [currentWindow, windowId, resizeWindow, moveWindow, onMove, onResize, viewport]);
+    });
+  }, [currentWindow, windowId, resizeWindow, onResize, viewport]);
 
   // Handle resize end
   const handleResizeEnd = useCallback(() => {
     resizeStateRef.current = null;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
   }, []);
 
-  // Handle keyboard shortcuts with explicit return type
+  // Handle keyboard shortcuts
   const handleKeyDown = useCallback((event: KeyboardEvent): 'close' | 'minimize' | 'maximize' | null => {
     if (!currentWindow) return null;
 
@@ -244,6 +247,15 @@ export function useWindowManager({
 
     return null;
   }, [currentWindow]);
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
 
   return {
     currentWindow,

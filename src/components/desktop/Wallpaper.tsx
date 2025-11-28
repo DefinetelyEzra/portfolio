@@ -1,7 +1,7 @@
 'use client';
 
 import { useDesktopStore } from '@/store/desktopStore';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ALL_WALLPAPERS, getNextWallpaper, type WallpaperData } from '@/utils/wallpaperUtils';
 import { Play, Pause, SkipForward, SkipBack, Shuffle } from 'lucide-react';
 
@@ -13,15 +13,30 @@ const CYCLE_INTERVALS = {
 
 type CycleSpeed = keyof typeof CYCLE_INTERVALS;
 
+// Lazy load heavy icons
+const ControlIcons = {
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Shuffle
+};
+
 export default function Wallpaper() {
   const { settings, updateSettings } = useDesktopStore();
-  const initialWallpaper = ALL_WALLPAPERS.find((w: WallpaperData) => w.path === settings.wallpaper) || ALL_WALLPAPERS[0];
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false); // Start paused
   const [cycleSpeed, setCycleSpeed] = useState<CycleSpeed>('medium');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const [currentWallpaper, setCurrentWallpaper] = useState<WallpaperData>(initialWallpaper);
+  const [currentWallpaper, setCurrentWallpaper] = useState<WallpaperData | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Lazy load initial wallpaper
+  useEffect(() => {
+    const initialWallpaper = ALL_WALLPAPERS.find((w: WallpaperData) => w.path === settings.wallpaper) || ALL_WALLPAPERS[0];
+    setCurrentWallpaper(initialWallpaper);
+  }, [settings.wallpaper]);
 
   useEffect(() => {
     const checkDevice = () => {
@@ -35,7 +50,9 @@ export default function Wallpaper() {
   }, []);
 
   const getWallpaperStyle = useMemo(() => {
-    const wallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper) || initialWallpaper;
+    if (!currentWallpaper) return {};
+
+    const wallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper) || currentWallpaper;
 
     switch (wallpaper.type) {
       case 'gradient':
@@ -51,30 +68,58 @@ export default function Wallpaper() {
           backgroundRepeat: 'no-repeat',
         };
     }
-  }, [settings.wallpaper, initialWallpaper]);
+  }, [settings.wallpaper, currentWallpaper]);
 
-  // Debounced wallpaper change
+  // Debounced wallpaper change with cleanup
   const changeWallpaper = useCallback((newWallpaper: WallpaperData) => {
-    if (isTransitioning) return; 
+    if (isTransitioning || !newWallpaper) return;
+
     setIsTransitioning(true);
-    setTimeout(() => {
+
+    // Preload image for smoother transitions
+    if (newWallpaper.type === 'static') {
+      const img = new Image();
+      img.src = newWallpaper.path;
+      img.onload = () => {
+        updateSettings({ wallpaper: newWallpaper.path });
+        setCurrentWallpaper(newWallpaper);
+        setIsTransitioning(false);
+      };
+      img.onerror = () => {
+        // Fallback if image fails to load
+        updateSettings({ wallpaper: newWallpaper.path });
+        setCurrentWallpaper(newWallpaper);
+        setIsTransitioning(false);
+      };
+    } else {
       updateSettings({ wallpaper: newWallpaper.path });
       setCurrentWallpaper(newWallpaper);
       setIsTransitioning(false);
-    }, 200);
+    }
   }, [updateSettings, isTransitioning]);
 
-  // Auto-cycle functionality
+  // Auto-cycle functionality with proper cleanup
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
 
-    const interval = setInterval(() => {
+    if (!isAutoPlaying || !currentWallpaper) return;
+
+    intervalRef.current = setInterval(() => {
       const nextWallpaper = getNextWallpaper(settings.wallpaper, isMobile);
       changeWallpaper(nextWallpaper);
     }, CYCLE_INTERVALS[cycleSpeed]);
 
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, cycleSpeed, settings.wallpaper, changeWallpaper, isMobile]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isAutoPlaying, cycleSpeed, settings.wallpaper, changeWallpaper, isMobile, currentWallpaper]);
 
   const goToNext = useCallback(() => {
     const nextWallpaper = getNextWallpaper(settings.wallpaper, isMobile);
@@ -92,6 +137,13 @@ export default function Wallpaper() {
     changeWallpaper(ALL_WALLPAPERS[randomIndex]);
   }, [changeWallpaper]);
 
+  // Don't render controls until wallpaper is loaded
+  if (!currentWallpaper) {
+    return (
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700" />
+    );
+  }
+
   return (
     <>
       {/* Main wallpaper */}
@@ -101,19 +153,6 @@ export default function Wallpaper() {
       >
         <div className="absolute inset-0 bg-black/5" />
       </div>
-
-      {/* Preloader for next wallpaper (only when auto-playing) */}
-      {isAutoPlaying && (
-        <div
-          className="fixed inset-0 -z-20"
-          style={{
-            backgroundImage: `url(${getNextWallpaper(settings.wallpaper, isMobile).path})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-      )}
 
       {/* Control panel */}
       <div
@@ -146,7 +185,7 @@ export default function Wallpaper() {
                 type="button"
                 aria-label="Previous wallpaper"
               >
-                <SkipBack size={16} />
+                <ControlIcons.SkipBack size={16} />
               </button>
 
               <button
@@ -156,7 +195,7 @@ export default function Wallpaper() {
                 type="button"
                 aria-label={isAutoPlaying ? 'Pause slideshow' : 'Play slideshow'}
               >
-                {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                {isAutoPlaying ? <ControlIcons.Pause size={16} /> : <ControlIcons.Play size={16} />}
               </button>
 
               <button
@@ -166,7 +205,7 @@ export default function Wallpaper() {
                 type="button"
                 aria-label="Next wallpaper"
               >
-                <SkipForward size={16} />
+                <ControlIcons.SkipForward size={16} />
               </button>
 
               <button
@@ -176,7 +215,7 @@ export default function Wallpaper() {
                 type="button"
                 aria-label="Random wallpaper"
               >
-                <Shuffle size={16} />
+                <ControlIcons.Shuffle size={16} />
               </button>
             </div>
 

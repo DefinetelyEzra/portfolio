@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect, memo } from 'react';
 import MinimizeAnimation from './MinimizeAnimation';
 import { motion } from 'framer-motion';
 import { WindowProps, AppConfig, WindowState } from '@/types/desktop';
@@ -8,16 +8,21 @@ import WindowControls from './WindowControls';
 import { useWindowManager } from '@/hooks/useWindowManager';
 import { useDesktopStore } from '@/store/desktopStore';
 
-function isTopmostWindow(currentZ: number): boolean {
-  const windows = Array.from(document.querySelectorAll('[data-window]'));
+// Memoized function to check if window is topmost
+const isTopmostWindow = (currentZ: number): boolean => {
+  const windows = document.querySelectorAll('[data-window]');
   if (!windows.length) return true;
-  const maxZ = Math.max(
-    ...windows.map(el => Number.parseInt((el as HTMLElement).dataset.zIndex || '0'))
-  );
-  return currentZ === maxZ;
-}
 
-export default function Window({
+  let maxZ = 0;
+  for (const el of windows) {
+    const z = Number.parseInt((el as HTMLElement).dataset.zIndex || '0');
+    if (z > maxZ) maxZ = z;
+  }
+
+  return currentZ === maxZ;
+};
+
+function Window({
   window: windowState,
   app,
   onClose,
@@ -47,7 +52,7 @@ export default function Window({
     onResize,
   });
 
-  /** Handlers **/
+  /** Handlers - Memoized for performance **/
   const handleHeaderDragStart = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
     if (!app.draggable || windowState.isMaximized) return;
@@ -79,22 +84,19 @@ export default function Window({
     handleFocus();
   }, [handleFocus]);
 
-  /** Mouse event handlers **/
+  /** Mouse event handlers with passive: false only when needed **/
   useEffect(() => {
     if (!isDragging && !isResizing) return;
 
     const onMouseMove = (e: MouseEvent) => {
-      e.preventDefault();
       if (isDragging) {
         handleDrag(e);
-      }
-      if (isResizing) {
+      } else if (isResizing) {
         handleResize(e);
       }
     };
 
-    const onMouseUp = (e: MouseEvent) => {
-      e.preventDefault();
+    const onMouseUp = () => {
       if (isDragging) {
         setIsDragging(false);
         handleDragEnd();
@@ -105,8 +107,9 @@ export default function Window({
       }
     };
 
-    document.addEventListener('mousemove', onMouseMove, { passive: false });
-    document.addEventListener('mouseup', onMouseUp, { passive: false });
+    // Only prevent default when actively dragging/resizing
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
 
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -114,7 +117,7 @@ export default function Window({
     };
   }, [isDragging, isResizing, handleDrag, handleDragEnd, handleResize, handleResizeEnd]);
 
-  /** Keyboard shortcuts **/
+  /** Keyboard shortcuts - Only for topmost window **/
   useEffect(() => {
     if (!isTopmostWindow(windowState.zIndex)) return;
 
@@ -134,21 +137,20 @@ export default function Window({
     };
 
     document.addEventListener('keydown', handleKeyboardShortcuts);
-    return () => {
-      document.removeEventListener('keydown', handleKeyboardShortcuts);
-    };
+    return () => document.removeEventListener('keydown', handleKeyboardShortcuts);
   }, [windowState.zIndex, handleKeyDown, onClose, onMinimize, onMaximize]);
 
-  useEffect(() => {
-    if ((windowState.isAnimatingMinimize || windowState.isAnimatingRestore) && windowRef.current) {
-      const dockIcon = document.querySelector(`[data-dock-icon="${windowState.appId}"]`) as HTMLElement;
-      if (dockIcon) {
-        // Window will be hidden by MinimizeAnimation component
-      }
-    }
-  }, [windowState.isAnimatingMinimize, windowState.isAnimatingRestore, windowState.appId]);
-
   const AppComponent = app.component;
+
+  // Calculate dimensions once
+  const windowStyle: React.CSSProperties = {
+    width: windowState.isMaximized ? '100vw' : windowState.size.width,
+    height: windowState.isMaximized ? '100vh' : windowState.size.height,
+    zIndex: windowState.zIndex,
+    position: windowState.isMaximized ? 'fixed' : 'absolute',
+    visibility: windowState.isAnimatingMinimize || windowState.isAnimatingRestore ? 'hidden' : 'visible',
+    display: windowState.isMinimized && !windowState.isAnimatingRestore ? 'none' : 'block',
+  };
 
   /** Render **/
   return (
@@ -175,20 +177,13 @@ export default function Window({
         }}
         className={`
         absolute backdrop-blur-xl rounded-lg shadow-2xl border overflow-hidden
-        bg-[var(--window-bg)] border-[var(--window-border)]
+        [background:var(--window-bg)] border-(--window-border)
         ${windowState.isMaximized ? 'fixed inset-0 rounded-none' : ''}
         ${isDragging ? 'cursor-grabbing select-none' : ''}
         ${isResizing ? 'select-none' : ''}
         ${windowState.isAnimatingMinimize ? 'pointer-events-none' : ''}
       `}
-        style={{
-          width: windowState.isMaximized ? '100vw' : windowState.size.width,
-          height: windowState.isMaximized ? '100vh' : windowState.size.height,
-          zIndex: windowState.zIndex,
-          position: windowState.isMaximized ? 'fixed' : 'absolute',
-          visibility: windowState.isAnimatingMinimize || windowState.isAnimatingRestore ? 'hidden' : 'visible',
-          display: windowState.isMinimized && !windowState.isAnimatingRestore ? 'none' : 'block',
-        }}
+        style={windowStyle}
         onClick={handleWindowClick}
       >
         {/* Header */}
@@ -215,13 +210,13 @@ export default function Window({
         )}
 
         {/* Glow Effect */}
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 rounded-lg bg-linear-to-br from-white/10 to-transparent pointer-events-none" />
       </motion.div>
 
       {/* Minimize Animation Component */}
-      {(windowState.isAnimatingMinimize || windowState.isAnimatingRestore) && (
+      {(windowState.isAnimatingMinimize || windowState.isAnimatingRestore) && windowRef.current && (
         <MinimizeAnimation
-          windowElement={windowRef.current!}
+          windowElement={windowRef.current}
           appId={windowState.appId}
           isRestoring={!!windowState.isAnimatingRestore}
           onComplete={() => {
@@ -237,6 +232,22 @@ export default function Window({
   );
 }
 
+// Memoize to prevent unnecessary re-renders
+export default memo(Window, (prevProps, nextProps) => {
+  return (
+    prevProps.window.id === nextProps.window.id &&
+    prevProps.window.position.x === nextProps.window.position.x &&
+    prevProps.window.position.y === nextProps.window.position.y &&
+    prevProps.window.size.width === nextProps.window.size.width &&
+    prevProps.window.size.height === nextProps.window.size.height &&
+    prevProps.window.isMinimized === nextProps.window.isMinimized &&
+    prevProps.window.isMaximized === nextProps.window.isMaximized &&
+    prevProps.window.zIndex === nextProps.window.zIndex &&
+    prevProps.window.isAnimatingMinimize === nextProps.window.isAnimatingMinimize &&
+    prevProps.window.isAnimatingRestore === nextProps.window.isAnimatingRestore
+  );
+});
+
 interface WindowHeaderProps {
   app: AppConfig;
   windowState: WindowState;
@@ -248,7 +259,7 @@ interface WindowHeaderProps {
   onMaximize: () => void;
 }
 
-function WindowHeader({
+const WindowHeader = memo(function WindowHeader({
   app,
   windowState,
   isDragging,
@@ -265,8 +276,8 @@ function WindowHeader({
       className={`
         flex items-center justify-between px-4 py-3 border-b
         ${currentTheme === 'dark'
-          ? 'bg-gradient-to-r from-gray-800 to-gray-900 border-gray-700/50'
-          : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200/50'
+          ? 'bg-linear-to-r from-gray-800 to-gray-900 border-gray-700/50'
+          : 'bg-linear-to-r from-gray-50 to-gray-100 border-gray-200/50'
         }
         ${app.draggable && !windowState.isMaximized ? 'cursor-grab' : ''}
         ${isDragging ? 'cursor-grabbing' : ''}
@@ -287,14 +298,14 @@ function WindowHeader({
       </div>
     </motion.div>
   );
-}
+});
 
 interface WindowContentProps {
   AppComponent: React.ComponentType;
   app: AppConfig;
 }
 
-function WindowContent({ AppComponent, app }: Readonly<WindowContentProps>) {
+const WindowContent = memo(function WindowContent({ AppComponent, app }: Readonly<WindowContentProps>) {
   return (
     <div className="flex-1 overflow-hidden relative" style={{ height: 'calc(100% - 52px)' }}>
       <div className="absolute inset-0 overflow-auto">
@@ -312,14 +323,14 @@ function WindowContent({ AppComponent, app }: Readonly<WindowContentProps>) {
       </div>
     </div>
   );
-}
+});
 
 interface ResizeHandleProps {
   isResizing: boolean;
   onResizeStart: (e: React.MouseEvent) => void;
 }
 
-function ResizeHandle({ isResizing, onResizeStart }: Readonly<ResizeHandleProps>) {
+const ResizeHandle = memo(function ResizeHandle({ isResizing, onResizeStart }: Readonly<ResizeHandleProps>) {
   return (
     <button
       className={`
@@ -332,4 +343,4 @@ function ResizeHandle({ isResizing, onResizeStart }: Readonly<ResizeHandleProps>
       <div className="absolute bottom-1 right-1 w-2 h-2 border-r-2 border-b-2 border-gray-400" />
     </button>
   );
-}
+});

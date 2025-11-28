@@ -188,11 +188,11 @@ export default function SettingsApp() {
         setSettings(prev => {
             if (key === 'widgets' && typeof value === 'object' && value !== null) {
                 const updatedWidgets = { ...prev.widgets };
-                Object.keys(value).forEach(widgetId => {
+                for (const widgetId of Object.keys(value)) {
                     if (updatedWidgets[widgetId]) {
                         updatedWidgets[widgetId] = { ...updatedWidgets[widgetId], ...value[widgetId] };
                     }
-                });
+                }
                 return { ...prev, [key]: updatedWidgets };
             }
             return { ...prev, [key]: value };
