@@ -96,7 +96,7 @@ export default function ExtrasApp() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setActiveGame('tictactoe')}
-                            className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-left hover:from-blue-500 hover:to-blue-700 transition-all"
+                            className="bg-linear-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-left hover:from-blue-500 hover:to-blue-700 transition-all"
                         >
                             <div className="text-3xl mb-2">⭕</div>
                             <h3 className="text-lg font-semibold mb-1">Tic Tac Toe</h3>
@@ -107,7 +107,7 @@ export default function ExtrasApp() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setActiveGame('snake')}
-                            className="bg-gradient-to-br from-green-600 to-green-800 rounded-xl p-6 text-left hover:from-green-500 hover:to-green-700 transition-all"
+                            className="bg-linear-to-br from-green-600 to-green-800 rounded-xl p-6 text-left hover:from-green-500 hover:to-green-700 transition-all"
                         >
                             <div className="text-3xl mb-2">🐍</div>
                             <h3 className="text-lg font-semibold mb-1">Snake Game</h3>
@@ -118,7 +118,7 @@ export default function ExtrasApp() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setActiveGame('terminal')}
-                            className="bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl p-6 text-left hover:from-gray-600 hover:to-gray-800 transition-all"
+                            className="bg-linear-to-br from-gray-700 to-gray-900 rounded-xl p-6 text-left hover:from-gray-600 hover:to-gray-800 transition-all"
                         >
                             <div className="text-3xl mb-2">💻</div>
                             <h3 className="text-lg font-semibold mb-1">Terminal</h3>
@@ -142,7 +142,7 @@ export default function ExtrasApp() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
-                                    className={`bg-gradient-to-br ${egg.gradient} rounded-xl p-6 ${egg.action ? 'cursor-pointer' : ''}`}
+                                    className={`bg-linear-to-br ${egg.gradient} rounded-xl p-6 ${egg.action ? 'cursor-pointer' : ''}`}
                                     onClick={egg.action}
                                 >
                                     <IconComponent className="w-8 h-8 mb-3" />
@@ -179,7 +179,7 @@ export default function ExtrasApp() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 text-white">
+        <div className="min-h-screen flex flex-col bg-linear-to-br from-gray-900 via-purple-900 to-violet-800 text-white">
             {/* Header */}
             <div className="p-6 border-b border-gray-700">
                 <h1 className="text-2xl font-bold mb-2">Misc</h1>

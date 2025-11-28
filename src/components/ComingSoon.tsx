@@ -94,7 +94,7 @@ export default function ComingSoon({
 
     if (!mounted) {
         return (
-            <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800">
+            <div className="h-full flex items-center justify-center bg-linear-to-br from-gray-900 via-purple-900 to-violet-800">
                 <div className="animate-pulse">
                     <div className="w-16 h-16 bg-white/20 rounded-full"></div>
                 </div>
@@ -157,7 +157,7 @@ export default function ComingSoon({
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 >
-                    <div className="w-full h-full bg-gradient-to-r from-white/20 to-white/40 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <div className="w-full h-full bg-linear-to-r from-white/20 to-white/40 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
                         <motion.div
                             animate={{ scale: [1, 1.1, 1] }}
                             transition={{ duration: 2, repeat: Infinity }}
@@ -208,12 +208,12 @@ export default function ComingSoon({
                 }}
                 className="relative"
             >
-                <div className="w-32 h-32 bg-gradient-to-br from-white/20 to-white/40 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-2xl">
+                <div className="w-32 h-32 bg-linear-to-br from-white/20 to-white/40 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-2xl">
                     <Clock className="w-16 h-16 text-white" />
                 </div>
 
                 <motion.div
-                    className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                    className="absolute -top-3 -right-3 w-10 h-10 bg-linear-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
                     animate={{
                         rotate: [0, 360],
                         scale: [1, 1.1, 1]
@@ -268,7 +268,7 @@ export default function ComingSoon({
     );
 
     return (
-        <div className={`h-full flex flex-col bg-gradient-to-br ${gradient} text-white relative overflow-hidden`}>
+        <div className={`h-full flex flex-col bg-linear-to-br ${gradient} text-white relative overflow-hidden`}>
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute inset-0" style={{
@@ -302,7 +302,7 @@ export default function ComingSoon({
             </div>
 
             {/* Bottom Decoration */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
     );
 }

@@ -184,7 +184,7 @@ export default function SkillsApp() {
   const expertSkills = skillsData.filter(skill => skill.level >= 90).length;
 
   return (
-    <div className={`h-full flex flex-col bg-gradient-to-br ${styles.background}`}>
+    <div className={`h-full flex flex-col bg-linear-to-br ${styles.background}`}>
       {/* Header */}
       <div className={`p-6 border-b ${styles.headerBorder}`}>
         <h1 className={`text-2xl font-bold ${styles.text.primary} mb-2`}>Technical Skills</h1>
@@ -327,7 +327,7 @@ export default function SkillsApp() {
                   className={`${styles.cardBackground} rounded-xl p-6 shadow-sm border`}
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className={`w-10 h-10 bg-gradient-to-br ${styles.categoryIcon} rounded-lg flex items-center justify-center`}>
+                    <div className={`w-10 h-10 bg-linear-to-br ${styles.categoryIcon} rounded-lg flex items-center justify-center`}>
                       <CategoryIcon className="w-5 h-5 text-white" />
                     </div>
                     <h3 className={`text-xl font-bold ${styles.text.primary}`}>{category}</h3>
@@ -336,7 +336,7 @@ export default function SkillsApp() {
                   <div className="space-y-4">
                     {categorySkills.map((skill, skillIndex) => (
                       <div key={skill.name} className="flex items-center space-x-4">
-                        <div className="w-32 flex-shrink-0">
+                        <div className="w-32 shrink-0">
                           <span className={`text-sm font-medium ${styles.text.primary}`}>{skill.name}</span>
                         </div>
                         <div className="flex-1">

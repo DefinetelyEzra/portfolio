@@ -21,8 +21,8 @@ function CircularProgress({ progress }: CircularProgressProps) {
     const backgroundStroke = currentTheme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
     const progressGradientId = currentTheme === 'light' ? 'lightProgressGradient' : 'progressGradient';
     const gradientStops = currentTheme === 'light'
-        ? { start: '#4F46E5', end: '#A5B4FC' } // Lighter gradient for light mode
-        : { start: '#3B82F6', end: '#8B5CF6' }; // Dark mode gradient
+        ? { start: '#4F46E5', end: '#A5B4FC' }
+        : { start: '#3B82F6', end: '#8B5CF6' };
 
     return (
         <div className="relative w-32 h-32">
@@ -73,6 +73,7 @@ export default function BootScreen() {
     const { setBooting, currentTheme } = useDesktopStore();
     const [progress, setProgress] = useState(0);
     const [loadingText, setLoadingText] = useState('Initializing...');
+    const [mounted, setMounted] = useState(false);
 
     const loadingSteps = useMemo(() => [
         { text: 'Initializing system...', duration: 800 },
@@ -83,6 +84,12 @@ export default function BootScreen() {
     ], []);
 
     useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
         let currentStep = 0;
         let progressValue = 0;
 
@@ -123,7 +130,7 @@ export default function BootScreen() {
         };
 
         setTimeout(loadNext, 500);
-    }, [setBooting, loadingSteps]);
+    }, [mounted, setBooting, loadingSteps]);
 
     const overlayStyle = {
         background: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
@@ -182,14 +189,15 @@ export default function BootScreen() {
                     Loading...
                 </motion.h1>
 
-                {/* Loading Text */}
+                {/* Loading Text - Fixed hydration */}
                 <div className="w-80 space-y-4">
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.6, duration: 0.3 }}
-                        className="text-sm min-h-[1.25rem] drop-shadow-md"
+                        className="text-sm h-5 drop-shadow-md"
                         style={textStyle}
+                        suppressHydrationWarning
                     >
                         {loadingText}
                     </motion.p>

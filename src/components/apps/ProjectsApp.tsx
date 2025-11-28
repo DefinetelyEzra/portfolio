@@ -200,7 +200,7 @@ export default function ProjectsApp() {
     };
 
     return (
-        <div className={`h-full flex flex-col bg-gradient-to-br ${styles.background}`}>
+        <div className={`h-full flex flex-col bg-linear-to-br ${styles.background}`}>
             {/* Header */}
             <div className={`p-6 border-b ${styles.headerBorder}`}>
                 <h1 className={`text-2xl font-bold ${styles.text.primary} mb-2`}>My Projects</h1>
@@ -271,7 +271,7 @@ export default function ProjectsApp() {
                                 className={`${styles.projectCard} rounded-xl shadow-sm border overflow-hidden transition-all group`}
                             >
                                 {/* Project Image */}
-                                <div className="relative h-48 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 overflow-hidden">
+                                <div className="relative h-48 bg-linear-to-br from-blue-500 via-purple-600 to-indigo-700 overflow-hidden">
                                     {/* Project Icon */}
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="text-white text-6xl font-bold opacity-20">

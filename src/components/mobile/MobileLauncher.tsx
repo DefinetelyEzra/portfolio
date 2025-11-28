@@ -168,7 +168,7 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                         return (
                             <div
                                 key={pageKey} 
-                                className="flex-shrink-0 w-full px-6"
+                                className="shrink-0 w-full px-6"
                                 style={{ width: `${100 / paginationData.totalPages}%` }}
                             >
                                 <div

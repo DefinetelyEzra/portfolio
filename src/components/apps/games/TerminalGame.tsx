@@ -152,8 +152,8 @@ export default function TerminalGame() {
                     );
                 })}
 
-                <div className="flex items-center min-h-[2.5rem]">
-                    <span className="text-green-400 mr-2 flex-shrink-0">$</span>
+                <div className="flex items-center min-h-10">
+                    <span className="text-green-400 mr-2 shrink-0">$</span>
                     <input
                         ref={inputRef}
                         type="text"
@@ -165,7 +165,7 @@ export default function TerminalGame() {
                                 setTerminalInput('');
                             }
                         }}
-                        className="flex-1 bg-transparent text-white outline-none text-sm min-h-[2.5rem] touch-manipulation"
+                        className="flex-1 bg-transparent text-white outline-none text-sm min-h-10 touch-manipulation"
                         placeholder="Type a command..."
                         autoFocus
                     />

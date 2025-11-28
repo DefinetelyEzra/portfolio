@@ -171,7 +171,7 @@ export default function MobileSettingsApp() {
     ];
 
     return (
-        <div className={`min-h-screen bg-gradient-to-br ${styles.background}`}>
+        <div className={`min-h-screen bg-linear-to-br ${styles.background}`}>
             {/* Header */}
             <div className={`${styles.card.background} border-b ${styles.card.border} px-4 py-3`}>
                 <h1 className={`text-xl font-bold ${styles.text.primary} flex items-center`}>
@@ -315,7 +315,7 @@ export default function MobileSettingsApp() {
                     >
                         <div className={`${styles.card.background} rounded-xl p-6 border ${styles.card.border}`}>
                             <div className="flex items-center space-x-4 mb-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                                     <Smartphone className="text-white text-2xl" />
                                 </div>
                                 <div>

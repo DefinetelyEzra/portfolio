@@ -264,7 +264,7 @@ export default function SettingsApp() {
     return (
         <motion.div
             key={layoutKey} // Re-render on layout key change
-            className={`h-screen flex bg-gradient-to-br ${styles.background} transition-all duration-300`}
+            className={`h-screen flex bg-linear-to-br ${styles.background} transition-all duration-300`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -455,7 +455,7 @@ export default function SettingsApp() {
                         <div className="space-y-6">
                             <div className={`${styles.card.background} rounded-xl p-6 border ${styles.card.border}`}>
                                 <div className="flex items-center space-x-4 mb-4">
-                                    <div className={`w-16 h-16 bg-gradient-to-br ${styles.gradient} rounded-xl flex items-center justify-center`}>
+                                    <div className={`w-16 h-16 bg-linear-to-br ${styles.gradient} rounded-xl flex items-center justify-center`}>
                                         <span className="text-white text-2xl font-bold">OS</span>
                                     </div>
                                     <div>

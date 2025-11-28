@@ -232,7 +232,7 @@ export default function ContactApp() {
   };
 
   return (
-    <div className={`min-h-screen w-full flex flex-col bg-gradient-to-br ${styles.background} p-4`}>
+    <div className={`min-h-screen w-full flex flex-col bg-linear-to-br ${styles.background} p-4`}>
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className={`p-4 border-b ${styles.headerBorder}`}>
@@ -270,7 +270,7 @@ export default function ContactApp() {
                   animate={{ opacity: 1, y: 0 }}
                   className={`mb-6 p-4 ${styles.successAlert} border rounded-lg flex items-center space-x-3`}
                 >
-                  <CheckCircle className={`w-5 h-5 ${styles.successText.primary} flex-shrink-0`} />
+                  <CheckCircle className={`w-5 h-5 ${styles.successText.primary} shrink-0`} />
                   <div>
                     <p className={`${styles.successText.primary} font-medium`}>Message sent successfully!</p>
                     <p className={`${styles.successText.secondary} text-sm`}>I&apos;ll get back to you within 24 hours.</p>
@@ -515,7 +515,7 @@ export default function ContactApp() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.3 }}
-                className={`bg-gradient-to-r ${styles.responseInfo} rounded-xl p-4 border`}
+                className={`bg-linear-to-r ${styles.responseInfo} rounded-xl p-4 border`}
               >
                 <div className="flex items-start space-x-3">
                   <div className={`p-2 ${styles.responseIcon} rounded-lg`}>

@@ -35,6 +35,23 @@ function Window({
   const windowRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  
+  // Local state for smooth resize (updated directly without store)
+  const [localSize, setLocalSize] = useState(windowState.size);
+  const [localPosition, setLocalPosition] = useState(windowState.position);
+
+  // Sync local state with store when not resizing/dragging
+  useEffect(() => {
+    if (!isResizing) {
+      setLocalSize(windowState.size);
+    }
+  }, [windowState.size, isResizing]);
+
+  useEffect(() => {
+    if (!isDragging) {
+      setLocalPosition(windowState.position);
+    }
+  }, [windowState.position, isDragging]);
 
   const {
     handleFocus,
@@ -48,8 +65,14 @@ function Window({
   } = useWindowManager({
     windowId: windowState.id,
     onFocus,
-    onMove,
-    onResize,
+    onMove: (position) => {
+      setLocalPosition(position);
+      onMove(position);
+    },
+    onResize: (size) => {
+      setLocalSize(size);
+      // Don't call onResize during active resize - only on end
+    },
   });
 
   /** Handlers - Memoized for performance **/
@@ -84,7 +107,7 @@ function Window({
     handleFocus();
   }, [handleFocus]);
 
-  /** Mouse event handlers with passive: false only when needed **/
+  /** Mouse event handlers **/
   useEffect(() => {
     if (!isDragging && !isResizing) return;
 
@@ -104,10 +127,11 @@ function Window({
       if (isResizing) {
         setIsResizing(false);
         handleResizeEnd();
+        // Now update the store with final size
+        onResize(localSize);
       }
     };
 
-    // Only prevent default when actively dragging/resizing
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 
@@ -115,7 +139,7 @@ function Window({
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [isDragging, isResizing, handleDrag, handleDragEnd, handleResize, handleResizeEnd]);
+  }, [isDragging, isResizing, handleDrag, handleDragEnd, handleResize, handleResizeEnd, onResize, localSize]);
 
   /** Keyboard shortcuts - Only for topmost window **/
   useEffect(() => {
@@ -142,10 +166,14 @@ function Window({
 
   const AppComponent = app.component;
 
+  // Use local size/position during drag/resize for smooth updates
+  const currentSize = isResizing ? localSize : windowState.size;
+  const currentPosition = isDragging ? localPosition : windowState.position;
+
   // Calculate dimensions once
   const windowStyle: React.CSSProperties = {
-    width: windowState.isMaximized ? '100vw' : windowState.size.width,
-    height: windowState.isMaximized ? '100vh' : windowState.size.height,
+    width: windowState.isMaximized ? '100vw' : currentSize.width,
+    height: windowState.isMaximized ? '100vh' : currentSize.height,
     zIndex: windowState.zIndex,
     position: windowState.isMaximized ? 'fixed' : 'absolute',
     visibility: windowState.isAnimatingMinimize || windowState.isAnimatingRestore ? 'hidden' : 'visible',
@@ -163,8 +191,8 @@ function Window({
         animate={{
           scale: 1,
           opacity: 1,
-          x: windowState.position.x,
-          y: windowState.position.y,
+          x: currentPosition.x,
+          y: currentPosition.y,
         }}
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{
@@ -172,18 +200,22 @@ function Window({
           stiffness: 300,
           damping: 30,
           duration: 0.3,
-          x: isDragging ? { duration: 0, type: false } : undefined,
-          y: isDragging ? { duration: 0, type: false } : undefined,
+          // Disable animations during drag OR resize
+          x: (isDragging || isResizing) ? { duration: 0, type: false } : undefined,
+          y: (isDragging || isResizing) ? { duration: 0, type: false } : undefined,
         }}
         className={`
-        absolute backdrop-blur-xl rounded-lg shadow-2xl border overflow-hidden
-        [background:var(--window-bg)] border-(--window-border)
-        ${windowState.isMaximized ? 'fixed inset-0 rounded-none' : ''}
-        ${isDragging ? 'cursor-grabbing select-none' : ''}
-        ${isResizing ? 'select-none' : ''}
-        ${windowState.isAnimatingMinimize ? 'pointer-events-none' : ''}
-      `}
-        style={windowStyle}
+          backdrop-blur-xl rounded-lg shadow-2xl border overflow-hidden
+          ${windowState.isMaximized ? 'fixed inset-0 rounded-none' : ''}
+          ${isDragging ? 'cursor-grabbing select-none' : ''}
+          ${isResizing ? 'select-none' : ''}
+          ${windowState.isAnimatingMinimize ? 'pointer-events-none' : ''}
+        `}
+        style={{
+          ...windowStyle,
+          background: 'var(--window-bg)',
+          borderColor: 'var(--window-border)',
+        }}
         onClick={handleWindowClick}
       >
         {/* Header */}
@@ -208,9 +240,6 @@ function Window({
             onResizeStart={handleWindowResizeStart}
           />
         )}
-
-        {/* Glow Effect */}
-        <div className="absolute inset-0 rounded-lg bg-linear-to-br from-white/10 to-transparent pointer-events-none" />
       </motion.div>
 
       {/* Minimize Animation Component */}
@@ -272,7 +301,7 @@ const WindowHeader = memo(function WindowHeader({
   const { currentTheme } = useDesktopStore();
 
   return (
-    <motion.div
+    <div
       className={`
         flex items-center justify-between px-4 py-3 border-b
         ${currentTheme === 'dark'
@@ -291,12 +320,13 @@ const WindowHeader = memo(function WindowHeader({
           onMinimize={onMinimize}
           onMaximize={onMaximize}
         />
-        <h2 className={`text-sm font-medium select-none pointer-events-none ${currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-          }`}>
+        <h2 className={`text-sm font-medium select-none pointer-events-none ${
+          currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+        }`}>
           {app.name}
         </h2>
       </div>
-    </motion.div>
+    </div>
   );
 });
 

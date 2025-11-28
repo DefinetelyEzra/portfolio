@@ -41,7 +41,6 @@ const MIN_VISIBLE_WIDTH = 100;
 const MIN_VISIBLE_HEIGHT = HEADER_HEIGHT;
 const MIN_WINDOW_WIDTH = 300;
 const MIN_WINDOW_HEIGHT = 200;
-const RESIZE_THROTTLE_MS = 16; // ~60fps
 
 export function useWindowManager({
   windowId,
@@ -49,11 +48,10 @@ export function useWindowManager({
   onMove,
   onResize,
 }: UseWindowManagerOptions) {
-  const { windows, focusWindow, moveWindow, resizeWindow } = useDesktopStore();
+  const { windows, focusWindow, moveWindow } = useDesktopStore();
   const dragStateRef = useRef<DragState | null>(null);
   const resizeStateRef = useRef<ResizeState | null>(null);
   const rafIdRef = useRef<number | null>(null);
-  const lastResizeTimeRef = useRef<number>(0); // For throttling
 
   // Memoized current window
   const currentWindow = useMemo(() =>
@@ -113,7 +111,7 @@ export function useWindowManager({
     handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Optimized drag handler with RAF for smooth performance
+  // Optimized drag handler with RAF
   const handleDrag = useCallback((event: MouseEvent) => {
     if (!dragStateRef.current || !currentWindow || currentWindow.isMaximized) return;
 
@@ -175,20 +173,12 @@ export function useWindowManager({
       direction: 'se',
     };
 
-    lastResizeTimeRef.current = 0; // Reset throttle timer
     handleFocus();
   }, [currentWindow, handleFocus]);
 
-  // Optimized resize handler with throttling + RAF
+  // Optimized resize handler, only updates local state via onResize callback
   const handleResize = useCallback((event: MouseEvent) => {
     if (!resizeStateRef.current || !currentWindow) return;
-
-    const now = performance.now();
-    if (now - lastResizeTimeRef.current < RESIZE_THROTTLE_MS) {
-      // Skip if throttled
-      return;
-    }
-    lastResizeTimeRef.current = now;
 
     // Cancel any pending RAF
     if (rafIdRef.current !== null) {
@@ -211,11 +201,10 @@ export function useWindowManager({
 
       const newSize = { width: newWidth, height: newHeight };
 
-      // Update size
-      resizeWindow(windowId, newSize);
+      // Only call onResize to update local state, don't update store during resize
       onResize?.(newSize);
     });
-  }, [currentWindow, windowId, resizeWindow, onResize, viewport]);
+  }, [currentWindow, onResize, viewport]);
 
   // Handle resize end
   const handleResizeEnd = useCallback(() => {

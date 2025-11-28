@@ -37,8 +37,8 @@ const getThemeStyles = (currentTheme: string) => ({
       ? 'from-gray-700 to-gray-600'
       : 'from-indigo-500 to-purple-600';
     return current
-      ? 'bg-gradient-to-br from-green-500 to-teal-600'
-      : `bg-gradient-to-br ${baseGradient}`;
+      ? 'bg-linear-to-br from-green-500 to-teal-600'
+      : `bg-linear-to-br ${baseGradient}`;
   }
 });
 
@@ -158,7 +158,7 @@ const HeaderSection = ({ styles }: { styles: ReturnType<typeof getThemeStyles> }
     className={`text-center mb-12 ${styles.text.secondary}`}
   >
     <div className="relative mb-6">
-      <div className={`w-32 h-32 mx-auto bg-gradient-to-br ${styles.avatar} rounded-full flex items-center justify-center shadow-lg`}>
+      <div className={`w-32 h-32 mx-auto bg-linear-to-br ${styles.avatar} rounded-full flex items-center justify-center shadow-lg`}>
         <span className={`${styles.text.primary} text-4xl font-bold`}>OA</span>
       </div>
     </div>
@@ -252,10 +252,10 @@ const TimelineSection = ({ styles }: { styles: ReturnType<typeof getThemeStyles>
       <div className="space-y-6">
         {timeline.map((item) => (
           <div key={`${item.year}-${item.company}`} className="flex items-start space-x-4">
-            <div className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold shadow-lg ${styles.timelineItem(Boolean(item.current))}`}>
+            <div className={`shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold shadow-lg ${styles.timelineItem(Boolean(item.current))}`}>
               {item.year}
             </div>
-            <div className={`flex-grow ${styles.cardBackground} rounded-xl p-6 shadow-sm border`}>
+            <div className={`grow ${styles.cardBackground} rounded-xl p-6 shadow-sm border`}>
               <div className="flex items-center justify-between mb-1">
                 <h3 className={`text-lg font-semibold ${styles.text.primary}`}>{item.title}</h3>
                 {item.current && (
@@ -294,7 +294,7 @@ const InterestsSection = ({ styles }: { styles: ReturnType<typeof getThemeStyles
               className={`${styles.cardBackground} rounded-xl p-6 shadow-sm border hover:shadow-md transition-all hover:scale-105`}
             >
               <div className="flex items-start space-x-4">
-                <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-br ${interest.gradient} rounded-lg flex items-center justify-center shadow-md`}>
+                <div className={`shrink-0 w-12 h-12 bg-linear-to-br ${interest.gradient} rounded-lg flex items-center justify-center shadow-md`}>
                   <IconComponent className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -315,7 +315,7 @@ export default function AboutApp() {
   const styles = getThemeStyles(currentTheme);
 
   return (
-    <div className={`h-full overflow-y-auto bg-gradient-to-br ${styles.background} p-4`}>
+    <div className={`h-full overflow-y-auto bg-linear-to-br ${styles.background} p-4`}>
       <div className="max-w-6xl mx-auto">
         <HeaderSection styles={styles} />
         <StatsSection styles={styles} />

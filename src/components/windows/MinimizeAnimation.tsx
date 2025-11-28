@@ -121,7 +121,7 @@ export default function MinimizeAnimation({
     return (
         <div
             ref={cloneRef}
-            className="fixed pointer-events-none z-[9999]"
+            className="fixed pointer-events-none z-9999"
             style={{
                 position: 'fixed',
                 background: 'var(--window-bg, #1f2937)',
@@ -135,7 +135,7 @@ export default function MinimizeAnimation({
         >
             {/* Simple window representation */}
             <div
-                className="w-full bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 flex items-center px-4"
+                className="w-full bg-linear-to-r from-gray-800 to-gray-900 border-b border-gray-700/50 flex items-center px-4"
                 style={{ height: '32px' }}
             >
                 <div className="flex space-x-2">
