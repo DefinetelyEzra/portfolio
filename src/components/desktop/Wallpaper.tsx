@@ -140,7 +140,7 @@ export default function Wallpaper() {
   // Don't render controls until wallpaper is loaded
   if (!currentWallpaper) {
     return (
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700" />
+      <div className="fixed inset-0 -z-10 bg-linear-to-br from-gray-900 via-gray-800 to-gray-700" />
     );
   }
 

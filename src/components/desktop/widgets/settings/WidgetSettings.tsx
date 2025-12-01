@@ -196,7 +196,7 @@ export default function WidgetSettings() {
   ];
 
   return (
-    <div className={`h-full bg-gradient-to-br ${styles.background} p-6 overflow-y-auto`}>
+    <div className={`h-full bg-linear-to-br ${styles.background} p-6 overflow-y-auto`}>
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -71,7 +71,7 @@ function Window({
     },
     onResize: (size) => {
       setLocalSize(size);
-      // Don't call onResize during active resize - only on end
+      // Don't call onResize during active resize, only on end
     },
   });
 
@@ -141,7 +141,7 @@ function Window({
     };
   }, [isDragging, isResizing, handleDrag, handleDragEnd, handleResize, handleResizeEnd, onResize, localSize]);
 
-  /** Keyboard shortcuts - Only for topmost window **/
+  /** Keyboard shortcuts. Only for topmost window **/
   useEffect(() => {
     if (!isTopmostWindow(windowState.zIndex)) return;
 

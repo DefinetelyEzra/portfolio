@@ -189,7 +189,7 @@ export default function BootScreen() {
                     Loading...
                 </motion.h1>
 
-                {/* Loading Text - Fixed hydration */}
+                {/* Loading Text */}
                 <div className="w-80 space-y-4">
                     <motion.p
                         initial={{ opacity: 0 }}

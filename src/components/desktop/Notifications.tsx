@@ -60,7 +60,7 @@ export default function Notifications() {
               </div>
               <button
                 onClick={() => removeNotification(notification.id)}
-                className="flex-shrink-0 p-1 rounded-full hover:bg-gray-200/50 transition-colors"
+                className="shrink-0 p-1 rounded-full hover:bg-gray-200/50 transition-colors"
               >
                 <X className="w-4 h-4 text-gray-500" />
               </button>
