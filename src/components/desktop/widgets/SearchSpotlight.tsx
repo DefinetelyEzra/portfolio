@@ -1,12 +1,8 @@
 'use client';
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Command, FileText, Code, User, Mail, Star, Folder } from 'lucide-react';
-import BaseWidget from './BaseWidget';
-import { BaseWidgetProps } from '@/types/widget';
 import { useDesktopStore } from '@/store/desktopStore';
-
 interface SearchResult {
   id: string;
   title: string;
@@ -16,27 +12,22 @@ interface SearchResult {
   action: () => void;
   keywords: string[];
 }
-
 interface SearchSpotlightSettings {
   showSuggestions: boolean;
   maxResults: number;
   searchCategories: string[];
   animateResults: boolean;
 }
-
 const getThemeStyles = (currentTheme: string) => ({
   background: currentTheme === 'dark'
     ? 'from-gray-900 via-gray-800 to-gray-700'
     : 'from-indigo-50 via-white to-purple-50',
-
   searchInput: currentTheme === 'dark'
     ? 'bg-gray-800/90 border-gray-700/50 text-gray-100 placeholder-gray-400'
     : 'bg-white/90 border-gray-200/50 text-gray-900 placeholder-gray-500',
-
   resultsContainer: currentTheme === 'dark'
     ? 'bg-gray-800/95 border-gray-700/50'
     : 'bg-white/95 border-gray-200/50',
-
   resultItem: {
     base: currentTheme === 'dark'
       ? 'hover:bg-blue-900/20 text-gray-100'
@@ -48,27 +39,19 @@ const getThemeStyles = (currentTheme: string) => ({
       ? 'bg-gray-700'
       : 'bg-gray-100'
   },
-
   text: {
     primary: currentTheme === 'dark' ? 'text-gray-100' : 'text-gray-900',
     secondary: currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500',
     muted: currentTheme === 'dark' ? 'text-gray-500' : 'text-gray-400',
     accent: currentTheme === 'dark' ? 'text-blue-400' : 'text-blue-600',
   },
-
-  noResultsBg: currentTheme === 'dark'
-    ? 'bg-gray-900/50'
-    : 'bg-gray-50/50',
-
   footerBg: currentTheme === 'dark'
     ? 'bg-gray-900/50 border-gray-700/50'
     : 'bg-gray-50/50 border-gray-200/50',
-
   clearButton: currentTheme === 'dark'
     ? 'text-gray-400 hover:text-gray-300'
     : 'text-gray-400 hover:text-gray-600'
 });
-
 const SearchResultItem: React.FC<{
   result: SearchResult & { index: number };
   isSelected: boolean;
@@ -82,19 +65,15 @@ const SearchResultItem: React.FC<{
     skills: <Star className="w-3 h-3 opacity-60" />,
     content: <FileText className="w-3 h-3 opacity-60" />,
   };
-
-  const handleClick = () => onClick(result);
-
   return (
     <motion.button
       initial={animateResults ? { opacity: 0, x: -20 } : undefined}
       animate={animateResults ? { opacity: 1, x: 0 } : undefined}
       transition={animateResults ? { delay: result.index * 0.05 } : undefined}
-      onClick={handleClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${styles.resultItem.base
-        } ${isSelected ? styles.resultItem.selected : 'bg-transparent'}`}
+      onClick={() => onClick(result)}
+      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${styles.resultItem.base} ${isSelected ? styles.resultItem.selected : 'bg-transparent'}`}
     >
-      <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 ${styles.resultItem.iconBg} rounded-md`}>
+      <div className={`shrink-0 flex items-center justify-center w-8 h-8 ${styles.resultItem.iconBg} rounded-md`}>
         {result.icon}
       </div>
       <div className="flex-1 min-w-0">
@@ -109,29 +88,19 @@ const SearchResultItem: React.FC<{
     </motion.button>
   );
 };
-
-const SearchSpotlight: React.FC<BaseWidgetProps> = ({
-  widget,
-  onClose,
-}) => {
+export default function SearchSpotlight() {
   const [query, setQuery] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
   const { openWindow, currentTheme } = useDesktopStore();
-
   const styles = getThemeStyles(currentTheme);
-
   const settings: SearchSpotlightSettings = {
     showSuggestions: true,
     maxResults: 6,
     searchCategories: ['apps', 'projects', 'skills', 'content'],
     animateResults: true,
-    ...(widget.settings as Partial<SearchSpotlightSettings>),
   };
-
-  // Mock searchable content
   const searchableContent: SearchResult[] = useMemo(
     () => [
       {
@@ -189,15 +158,6 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
         keywords: ['react', 'portfolio', 'website', 'macos', 'interactive', 'nextjs'],
       },
       {
-        id: 'project-2',
-        title: 'Mobile App Development',
-        description: 'Cross-platform mobile applications',
-        category: 'projects',
-        icon: <Code className={`w-4 h-4 ${styles.text.accent}`} />,
-        action: () => openWindow('projects'),
-        keywords: ['mobile', 'app', 'react native', 'flutter', 'ios', 'android'],
-      },
-      {
         id: 'skill-react',
         title: 'React & Next.js',
         description: 'Frontend development expertise',
@@ -206,70 +166,30 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
         action: () => openWindow('skills'),
         keywords: ['react', 'nextjs', 'frontend', 'javascript', 'typescript', 'jsx'],
       },
-      {
-        id: 'skill-nodejs',
-        title: 'Node.js & Backend',
-        description: 'Server-side development skills',
-        category: 'skills',
-        icon: <Star className={`w-4 h-4 ${styles.text.accent}`} />,
-        action: () => openWindow('skills'),
-        keywords: ['nodejs', 'backend', 'api', 'server', 'express', 'database'],
-      },
-      {
-        id: 'content-1',
-        title: 'How I Built This Portfolio',
-        description: 'Technical deep-dive into the development process',
-        category: 'content',
-        icon: <FileText className={`w-4 h-4 ${styles.text.accent}`} />,
-        action: () => openWindow('about'),
-        keywords: ['tutorial', 'development', 'process', 'technical', 'guide', 'how-to'],
-      },
     ],
     [openWindow, styles.text.accent]
   );
-
-  // Filter results based on query
+  const matchesQuery = (item: SearchResult, words: string[]) => {
+    return words.some((word) =>
+      item.title.toLowerCase().includes(word) ||
+      item.description.toLowerCase().includes(word) ||
+      item.keywords.some((keyword) => keyword.toLowerCase().includes(word))
+    );
+  };
   const filteredResults = useMemo(() => {
     if (!query.trim()) return [];
-
     const normalizedQuery = query.toLowerCase().trim();
     const words = normalizedQuery.split(' ').filter((word) => word.length > 0);
-
-    const matchesSearchTerm = (text: string, word: string) =>
-      text.toLowerCase().includes(word);
-
-    const matchesItem = (item: SearchResult, word: string) =>
-      matchesSearchTerm(item.title, word) ||
-      matchesSearchTerm(item.description, word) ||
-      item.keywords.some((keyword) => matchesSearchTerm(keyword, word));
-
     return searchableContent
       .filter((item) => {
         if (!settings.searchCategories.includes(item.category)) return false;
-        return words.some((word) => matchesItem(item, word));
+        return matchesQuery(item, words);
       })
       .slice(0, settings.maxResults)
       .map((item, index) => ({ ...item, index }));
   }, [query, searchableContent, settings.searchCategories, settings.maxResults]);
-
-
-  // Handle input focus
-  const handleFocus = () => {
-    setIsExpanded(true);
-  };
-
-  // Handle input blur
-  const handleBlur = () => {
-    setTimeout(() => {
-      setIsExpanded(false);
-      setSelectedIndex(0);
-    }, 200);
-  };
-
-  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isExpanded || filteredResults.length === 0) return;
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -286,12 +206,12 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
         }
         break;
       case 'Escape':
-        handleClearQuery();
+        setQuery('');
+        setIsExpanded(false);
+        inputRef.current?.blur();
         break;
     }
   };
-
-  // Handle result click
   const handleResultClick = (result: SearchResult) => {
     result.action();
     setQuery('');
@@ -299,78 +219,49 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
     setSelectedIndex(0);
     inputRef.current?.blur();
   };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-  };
-
-  // Handle clear query
-  const handleClearQuery = () => {
-    setQuery('');
-    setIsExpanded(false);
-    setSelectedIndex(0);
-    inputRef.current?.blur();
-  };
-
-  // Auto-focus on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Reset selected index when results change
   useEffect(() => {
     setSelectedIndex(0);
   }, [filteredResults.length]);
-
   return (
-    <BaseWidget
-      widget={widget}
-      onClose={onClose}
-      title="Search Spotlight"
-      className="relative z-[10000] overflow-visible"
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed top-5 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-50"
+      style={{ pointerEvents: 'auto' }}
     >
-      <div className="relative overflow-visible">
-        {/* Search Input */}
+      <div className="relative">
         <div className={`relative flex items-center ${styles.searchInput} backdrop-blur-sm rounded-lg border shadow-lg`}>
-          <Search className={`w-5 h-5 ${styles.text.secondary} ml-3 flex-shrink-0`} />
+          <Search className={`w-5 h-5 ${styles.text.secondary} ml-3 shrink-0`} />
           <input
             ref={inputRef}
             type="text"
             value={query}
-            onChange={handleInputChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setIsExpanded(true)}
+            onBlur={() => setTimeout(() => setIsExpanded(false), 200)}
             onKeyDown={handleKeyDown}
             placeholder="Search apps, projects, skills..."
             className="flex-1 bg-transparent px-3 py-3 text-sm focus:outline-none"
           />
           {query && (
             <button
-              onClick={handleClearQuery}
+              onClick={() => {
+                setQuery('');
+                inputRef.current?.focus();
+              }}
               className={`p-2 ${styles.clearButton} transition-colors`}
             >
               <Command className="w-4 h-4" />
             </button>
           )}
         </div>
-
-        {/* Search Results */}
         <AnimatePresence>
           {isExpanded && filteredResults.length > 0 && (
             <motion.div
-              ref={resultsRef}
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: settings.animateResults ? 0.2 : 0 }}
-              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl overflow-hidden`}
-              style={{ maxHeight: '300px', zIndex: 10001 }}
+              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl overflow-hidden z-60`}
             >
               <div className="max-h-72 overflow-y-auto">
                 {filteredResults.map((result) => (
@@ -392,16 +283,13 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* No Results */}
         <AnimatePresence>
           {isExpanded && query.trim() && filteredResults.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl p-4`}
-              style={{ zIndex: 10001 }}
+              className={`absolute top-full left-0 right-0 mt-2 ${styles.resultsContainer} backdrop-blur-md rounded-lg border shadow-xl p-4 z-60`}
             >
               <div className={`text-center ${styles.text.secondary}`}>
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -412,8 +300,6 @@ const SearchSpotlight: React.FC<BaseWidgetProps> = ({
           )}
         </AnimatePresence>
       </div>
-    </BaseWidget>
+    </motion.div>
   );
-};
-
-export default SearchSpotlight;
+}

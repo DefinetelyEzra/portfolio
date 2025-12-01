@@ -317,6 +317,11 @@ export default function ContactApp() {
                         required
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
                         placeholder="Jardani Jovonovich"
+                        onKeyDown={(e) => {
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                       />
                     </div>
 
@@ -333,6 +338,11 @@ export default function ContactApp() {
                         required
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
                         placeholder="jardani@example.com"
+                        onKeyDown={(e) => {
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                       />
                     </div>
 
@@ -349,6 +359,11 @@ export default function ContactApp() {
                         required
                         className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${styles.input}`}
                         placeholder="What's this about?"
+                        onKeyDown={(e) => {
+                          if (e.key === ' ') {
+                            e.stopPropagation();
+                          }
+                        }}
                       />
                     </div>
 

@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { ALL_WALLPAPERS, getWallpapersForDevice } from '@/utils/wallpaperUtils';
 import { useDesktopStore } from '@/store/desktopStore';
-import WidgetSettings from '../desktop/widgets/settings/WidgetSettings';
 import { AudioManager } from '@/utils/audioManager';
 
 const getThemeStyles = (currentTheme: string) => {
@@ -112,8 +111,6 @@ interface AppSettings {
     soundEnabled: boolean;
     notifications: boolean;
     autoSave: boolean;
-    fontSize: 'small' | 'medium' | 'large';
-    widgets: { [key: string]: { visible: boolean; x: number; y: number; width?: number; height?: number; isPinned?: boolean; settings?: Record<string, unknown> } };
 }
 
 const defaultSettings: AppSettings = {
@@ -123,12 +120,6 @@ const defaultSettings: AppSettings = {
     soundEnabled: true,
     notifications: true,
     autoSave: true,
-    fontSize: 'medium',
-    widgets: {
-        'analog-clock': { visible: true, x: 100, y: 100, width: 200, height: 200, isPinned: false, settings: { timezone: 'Africa/Lagos', showSeconds: true, use24Hour: false, showDate: true, theme: 'auto' } },
-        'weatherDashboard': { visible: false, x: 300, y: 50, width: 200, height: 150, isPinned: false, settings: {} },
-        'quoteGenerator': { visible: false, x: 50, y: 300, width: 200, height: 150, isPinned: false, settings: {} }
-    }
 };
 
 export default function SettingsApp() {
@@ -140,7 +131,7 @@ export default function SettingsApp() {
     const styles = getThemeStyles(currentTheme);
 
     const [settings, setSettings] = useState<AppSettings>(defaultSettings);
-    const [activeSection, setActiveSection] = useState<'appearance' | 'preferences' | 'about' | 'widgets'>('appearance');
+    const [activeSection, setActiveSection] = useState<'appearance' | 'preferences' | 'about'>('appearance');
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     useEffect(() => {
@@ -184,19 +175,6 @@ export default function SettingsApp() {
                 useDesktopStore.getState().updateSettings({ theme: 'auto' });
             }
         }
-
-        setSettings(prev => {
-            if (key === 'widgets' && typeof value === 'object' && value !== null) {
-                const updatedWidgets = { ...prev.widgets };
-                for (const widgetId of Object.keys(value)) {
-                    if (updatedWidgets[widgetId]) {
-                        updatedWidgets[widgetId] = { ...updatedWidgets[widgetId], ...value[widgetId] };
-                    }
-                }
-                return { ...prev, [key]: updatedWidgets };
-            }
-            return { ...prev, [key]: value };
-        });
     };
 
     const saveSettings = async () => {
@@ -258,7 +236,6 @@ export default function SettingsApp() {
         { id: 'appearance', name: 'Appearance', icon: Palette },
         { id: 'preferences', name: 'Preferences', icon: SettingsIcon },
         { id: 'about', name: 'About', icon: User },
-        { id: 'widgets', name: 'Widgets', icon: Monitor },
     ];
 
     return (
@@ -290,7 +267,7 @@ export default function SettingsApp() {
                         return (
                             <motion.button
                                 key={section.id}
-                                onClick={() => setActiveSection(section.id as 'appearance' | 'preferences' | 'about' | 'widgets')}
+                                onClick={() => setActiveSection(section.id as 'appearance' | 'preferences' | 'about')}
                                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors mb-2 ${activeSection === section.id ? styles.nav.active : styles.nav.inactive
                                     } ${isMaximized ? 'justify-center space-x-0' : 'space-x-3'}`}
                                 whileHover={{ scale: isMaximized ? 1 : 1.02 }}
@@ -529,7 +506,6 @@ export default function SettingsApp() {
                         </div>
                     </motion.div>
                 )}
-                {activeSection === 'widgets' && <WidgetSettings />}
             </motion.div>
         </motion.div>
     );
