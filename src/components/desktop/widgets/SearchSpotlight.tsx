@@ -226,6 +226,7 @@ export default function SearchSpotlight() {
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
+      data-tutorial="search-spotlight"
       className="fixed top-5 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-50"
       style={{ pointerEvents: 'auto' }}
     >

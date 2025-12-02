@@ -7,6 +7,7 @@ import { DOCK_APPS } from '@/utils/constants';
 import Dock from './Dock';
 import Wallpaper from './Wallpaper';
 import Window from '../windows/Window';
+import HeroWindow from '../hero/HeroWindow';
 import Notifications from './Notifications';
 import WidgetManager from '../desktop/widgets/WidgetManager';
 
@@ -127,6 +128,9 @@ export default function Desktop() {
 
         {/* Notifications */}
         <Notifications />
+
+        {/* Hero Window*/}
+        <HeroWindow/>
       </div>
     </main>
   );

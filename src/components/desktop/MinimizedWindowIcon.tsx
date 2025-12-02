@@ -45,10 +45,10 @@ export default function MinimizedWindowIcon({ app, onClick }: MinimizedWindowIco
                 exit={{ scale: 0, opacity: 0 }}
             >
                 {/* Window Preview Background */}
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-gray-700/80 to-gray-800/80 backdrop-blur-sm border border-gray-600/50 shadow-lg" />
+                <div className="absolute inset-0 rounded-lg bg-linear-to-br from-gray-700/80 to-gray-800/80 backdrop-blur-sm border border-gray-600/50 shadow-lg" />
 
                 {/* Window Header */}
-                <div className="absolute top-0 left-0 right-0 h-3 rounded-t-lg bg-gradient-to-r from-gray-600 to-gray-700 border-b border-gray-600/50" />
+                <div className="absolute top-0 left-0 right-0 h-3 rounded-t-lg bg-linear-to-r from-gray-600 to-gray-700 border-b border-gray-600/50" />
 
                 {/* Window Controls */}
                 <div className="absolute top-1 left-1.5 flex space-x-1">
@@ -60,7 +60,7 @@ export default function MinimizedWindowIcon({ app, onClick }: MinimizedWindowIco
                 {/* App Icon */}
                 <div className="relative w-6 h-6 rounded-md overflow-hidden mt-1">
                     {imageError ? (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                             <span className="text-white text-xs font-semibold">
                                 {app.name.charAt(0).toUpperCase()}
                             </span>
