@@ -106,64 +106,7 @@ export const GRADIENT_WALLPAPERS = [
   },
 ];
 
-export const MOBILE_WALLPAPERS: WallpaperData[] = [
-  {
-    id: 'default01',
-    name: 'Default',
-    type: 'static',
-    path: '/wallpapers/mobile/default.jpg',
-    url: '/wallpapers/mobile/default.jpg',
-    category: 'abstract',
-    device: 'mobile' as const,
-  },
-  {
-    id: 'default02',
-    name: 'Default2',
-    type: 'static',
-    path: '/wallpapers/mobile/default2.jpg',
-    url: '/wallpapers/mobile/default2.jpg',
-    category: 'abstract',
-    device: 'mobile' as const,
-  },
-  {
-    id: 'default03',
-    name: 'Default3',
-    type: 'static',
-    path: '/wallpapers/mobile/redmoon.jpg',
-    url: '/wallpapers/mobile/redmoon.jpg',
-    category: 'abstract',
-    device: 'mobile' as const,
-  },
-  {
-    id: 'peaks',
-    name: 'Peaks',
-    type: 'static',
-    path: '/wallpapers/mobile/peaks.jpg',
-    url: '/wallpapers/mobile/peaks.jpg',
-    category: 'nature',
-    device: 'mobile' as const,
-  },
-  {
-    id: 'beach',
-    name: 'Beach',
-    type: 'static',
-    path: '/wallpapers/mobile/beach.jpg',
-    url: '/wallpapers/mobile/beach.jpg',
-    category: 'nature',
-    device: 'mobile' as const,
-  },
-  {
-    id: 'sky',
-    name: 'Sky',
-    type: 'static',
-    path: '/wallpapers/mobile/sky.jpg',
-    url: '/wallpapers/mobile/sky.jpg',
-    category: 'nature',
-    device: 'mobile' as const,
-  },
-];
-
-export const ALL_WALLPAPERS = [...WALLPAPER_COLLECTION, ...GRADIENT_WALLPAPERS, ...MOBILE_WALLPAPERS];
+export const ALL_WALLPAPERS = [...WALLPAPER_COLLECTION, ...GRADIENT_WALLPAPERS];
 
 export const getWallpapersForDevice = (isMobile: boolean): WallpaperData[] => {
   return ALL_WALLPAPERS.filter(wallpaper => !wallpaper.device || wallpaper.device === 'all' || wallpaper.device === (isMobile ? 'mobile' : 'desktop'));
