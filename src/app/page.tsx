@@ -1,34 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useDesktopStore } from '@/store/desktopStore';
-import { MOBILE_BREAKPOINT } from '@/utils/constants';
-import { useAudioContext } from '@/components/ui/AudioProvider';
-import BootScreen from '@/components/ui/BootScreen';
-import Desktop from '@/components/desktop/Desktop';
 import { isMobile } from '@/utils/deviceDetection';
-import MobileLauncher from '@/components/mobile/MobileLauncher';
-import MobileApp from '@/components/mobile/MobileApp';
+import Desktop from '@/components/desktop/Desktop';
 
 export default function HomePage() {
-  const { isBooting, setMobile, setSystemTheme, currentTheme } = useDesktopStore();
-  const { setAudioEnabled, setMasterVolume } = useAudioContext();
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [currentMobileApp, setCurrentMobileApp] = useState<string | null>(null);
-
-  useEffect(() => {
-    const updateDeviceType = () => {
-      const isMobileView = window.innerWidth < MOBILE_BREAKPOINT || isMobile();
-      setIsMobileDevice(isMobileView);
-      setMobile(isMobileView);
-    };
-
-    updateDeviceType();
-    window.addEventListener('resize', updateDeviceType);
-
-    return () => window.removeEventListener('resize', updateDeviceType);
-  }, [setMobile]);
+  const router = useRouter();
+  const { setSystemTheme, currentTheme } = useDesktopStore();
+  const [mounted, setMounted] = useState(false);
 
   // System theme detection
   useEffect(() => {
@@ -49,48 +30,43 @@ export default function HomePage() {
     document.documentElement.className = currentTheme ?? 'dark';
   }, [currentTheme]);
 
-  // Initialize audio settings and handle reduced motion
+  // Check and redirect mobile users - runs on mount and resize
   useEffect(() => {
-    setMasterVolume(0.3); // 30% volume
-    setAudioEnabled(true);
+    setMounted(true);
 
-    const mediaQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleMotionChange = (e: MediaQueryListEvent) => setAudioEnabled(!e.matches);
+    const checkAndRedirect = () => {
+      if (isMobile()) {
+        // Use window.location for immediate redirect on resize
+        globalThis.window.location.href = '/web';
+      }
+    };
 
-    setAudioEnabled(!mediaQuery.matches); // Initial check
-    mediaQuery.addEventListener('change', handleMotionChange);
-
-    return () => mediaQuery.removeEventListener('change', handleMotionChange);
-  }, [setAudioEnabled, setMasterVolume]);
-
-  // Render the appropriate component based on state
-  const renderContent = () => {
-    if (isBooting) {
-      return <BootScreen key="boot" />;
+    // Immediate check on mount
+    if (isMobile()) {
+      router.push('/web');
+      return;
     }
 
-    if (isMobileDevice) {
-      return (
-        <div key="mobile" className="h-full">
-          {currentMobileApp ? (
-            <MobileApp
-              appId={currentMobileApp}
-              onClose={() => setCurrentMobileApp(null)}
-              onHome={() => setCurrentMobileApp(null)}
-            />
-          ) : (
-            <MobileLauncher onAppOpen={setCurrentMobileApp} />
-          )}
+    // Listen for resize events
+    window.addEventListener('resize', checkAndRedirect);
+    return () => window.removeEventListener('resize', checkAndRedirect);
+  }, [router]);
+
+  // Don't render until mounted and verified not mobile
+  if (!mounted || isMobile()) {
+    return (
+      <main className={`fixed inset-0 overflow-hidden ${currentTheme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
+        <div className="flex items-center justify-center h-full">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
-      );
-    }
+      </main>
+    );
+  }
 
-    return <Desktop key="desktop" />;
-  };
-
+  // Render desktop for non-mobile devices
   return (
     <main className={`fixed inset-0 overflow-hidden ${currentTheme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
-      <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+      <Desktop />
     </main>
   );
 }

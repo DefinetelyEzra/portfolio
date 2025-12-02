@@ -26,7 +26,8 @@ export function generateViewport() {
   return {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
+    maximumScale: 5,
+    userScalable: true,
     themeColor: [
       { media: '(prefers-color-scheme: light)', color: '#f3f4f6' },
       { media: '(prefers-color-scheme: dark)', color: '#000000' }

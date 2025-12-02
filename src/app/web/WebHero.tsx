@@ -71,7 +71,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className={`text-4xl sm:text-5xl md:text-7xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'
+                        className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 px-4 ${isDark ? 'text-white' : 'text-gray-900'
                             }`}
                     >
                         Odunayo Agunbiade
@@ -82,7 +82,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className={`text-lg sm:text-xl md:text-2xl mb-8 ${isDark ? 'text-gray-300' : 'text-gray-600'
+                        className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-8 px-4 ${isDark ? 'text-gray-300' : 'text-gray-600'
                             }`}
                     >
                         ML Enthusiast • Fullstack Engineer • Problem Solver
@@ -93,7 +93,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
-                        className={`text-lg max-w-2xl mx-auto mb-12 ${isDark ? 'text-gray-400' : 'text-gray-600'
+                        className={`text-base sm:text-lg max-w-2xl mx-auto mb-12 px-4 ${isDark ? 'text-gray-400' : 'text-gray-600'
                             }`}
                     >
                         Building AI-driven solutions and scalable web applications that make a difference.

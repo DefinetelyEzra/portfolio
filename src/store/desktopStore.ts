@@ -29,7 +29,6 @@ interface DesktopStore {
     // UI State
     isBooting: boolean;
     isLoggedIn: boolean;
-    isMobile: boolean;
 
     // Wallpaper state
     wallpaperHistory: string[];
@@ -71,7 +70,6 @@ interface DesktopStore {
     // UI Actions
     setBooting: (isBooting: boolean) => void;
     setLoggedIn: (isLoggedIn: boolean) => void;
-    setMobile: (isMobile: boolean) => void;
 }
 
 const defaultSettings: EnhancedDesktopSettings = {
@@ -99,7 +97,6 @@ export const useDesktopStore = create<DesktopStore>()(
             notifications: [],
             isBooting: true,
             isLoggedIn: false,
-            isMobile: false,
             wallpaperHistory: [],
             currentWallpaperIndex: 0,
             currentTheme: 'dark',
@@ -352,9 +349,6 @@ export const useDesktopStore = create<DesktopStore>()(
             },
             setLoggedIn: (isLoggedIn: boolean) => {
                 set({ isLoggedIn });
-            },
-            setMobile: (isMobile: boolean) => {
-                set({ isMobile });
             },
         }),
         {

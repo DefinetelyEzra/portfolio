@@ -62,7 +62,7 @@ export default function WebPortfolio() {
     }, []);
 
     return (
-        <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen overflow-x-hidden ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
             {/* Progress Bar */}
             <motion.div
                 className="fixed top-0 left-0 right-0 h-1 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 origin-left z-60"
@@ -73,7 +73,7 @@ export default function WebPortfolio() {
             <WebNavbar activeSection={activeSection} />
 
             {/* Sections */}
-            <main>
+            <main className="w-full">
                 <section ref={heroRef} id="hero">
                     <WebHero />
                 </section>
