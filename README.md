@@ -109,6 +109,7 @@ The app automatically detects mobile/desktop views based on screen size (breakpo
 .
 ├── src/
 │   ├── app/                # Next.js pages and API routes
+│   │   ├── web             # Router and Componets for the portfolio webscreen 
 │   │   ├── api/contact/    # Contact form endpoint
 │   │   ├── layout.tsx      # Root layout with metadata and providers
 │   │   └── page.tsx        # Main entry point with boot screen and view switching
