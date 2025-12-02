@@ -27,7 +27,7 @@ const ReopenButton = ({ handleReopen, isDark }: { handleReopen: () => void; isDa
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={handleReopen}
-        className={`fixed top-6 right-6 z-15000 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${isDark
+        className={`fixed top-6 right-6 z-15 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${isDark
             ? 'bg-gray-800/90 hover:bg-gray-700/90 text-blue-400'
             : 'bg-white/90 hover:bg-gray-50/90 text-blue-600'
             }`}
@@ -332,11 +332,19 @@ const HeroContent = ({ isDark, handleClose, handleNavigate }: { isDark: boolean;
 export default function HeroWindow() {
     const [isVisible, setIsVisible] = useState(false);
     const [hasSeenHero, setHasSeenHero] = useState(false);
+    const [hasClickedButton, setHasClickedButton] = useState(false);
     const { openWindow, currentTheme } = useDesktopStore();
 
     const isDark = currentTheme === 'dark';
 
     useEffect(() => {
+
+        // Check if user has clicked any button
+        const buttonClicked = localStorage.getItem('portfolio-button-clicked');
+        if (buttonClicked) {
+            setHasClickedButton(true);
+        }
+
         // Check if user has seen hero
         const heroSeen = localStorage.getItem('portfolio-hero-seen');
         if (heroSeen) {
@@ -354,6 +362,7 @@ export default function HeroWindow() {
 
     const handleClose = () => {
         localStorage.setItem('portfolio-hero-seen', 'true');
+        localStorage.setItem('portfolio-button-clicked', 'true');
         setHasSeenHero(true);
         setIsVisible(false);
     };
@@ -368,7 +377,42 @@ export default function HeroWindow() {
     };
 
     if (hasSeenHero && !isVisible) {
-        return <ReopenButton handleReopen={handleReopen} isDark={isDark} />;
+        // Floating reopen button positioned under the web view toggle
+        return (
+            <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{
+                    opacity: 1,
+                    scale: 1,
+                    boxShadow: hasClickedButton === false ? [
+                        '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                        '0 0 0 10px rgba(59, 130, 246, 0)',
+                        '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                    ] : undefined
+                }}
+                transition={{
+                    boxShadow: {
+                        duration: 2,
+                        repeat: hasClickedButton === false ? Infinity : 0,
+                        ease: 'easeInOut'
+                    }
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                    setHasClickedButton(true);
+                    localStorage.setItem('portfolio-button-clicked', 'true');
+                    handleReopen();
+                }}
+                className={`fixed top-[84px] right-6 z-15 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${isDark
+                    ? 'bg-gray-800/90 hover:bg-gray-700/90 text-blue-400'
+                    : 'bg-white/90 hover:bg-gray-50/90 text-blue-600'
+                    }`}
+                title="Show Overview"
+            >
+                <Sparkles className="w-5 h-5" />
+            </motion.button>
+        );
     }
 
     if (!isVisible) return null;

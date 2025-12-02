@@ -71,7 +71,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className={`text-5xl md:text-7xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'
+                        className={`text-4xl sm:text-5xl md:text-7xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'
                             }`}
                     >
                         Odunayo Agunbiade
@@ -82,7 +82,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className={`text-xl md:text-2xl mb-8 ${isDark ? 'text-gray-300' : 'text-gray-600'
+                        className={`text-lg sm:text-xl md:text-2xl mb-8 ${isDark ? 'text-gray-300' : 'text-gray-600'
                             }`}
                     >
                         ML Enthusiast • Fullstack Engineer • Problem Solver
@@ -120,8 +120,8 @@ export default function WebHero() {
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 className={`p-3 rounded-full transition-colors ${isDark
-                                        ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                                        : 'bg-white hover:bg-gray-100 text-gray-700 shadow-md'
+                                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                    : 'bg-white hover:bg-gray-100 text-gray-700 shadow-md'
                                     }`}
                                 title={social.label}
                             >

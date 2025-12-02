@@ -9,6 +9,8 @@ import { useDesktopStore } from '@/store/desktopStore';
 import { useMobileStore } from '@/store/mobileStore';
 import { MobileAppConfig } from '@/types/mobile';
 import { isMobile } from '@/utils/deviceDetection';
+import { Globe } from 'lucide-react';
+import Link from 'next/link';
 import MobileNotification from './MobileNotification';
 
 interface MobileLauncherProps {
@@ -151,6 +153,20 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                 <MobileWidgets />
             </div>
 
+            {/* Web View Button */}
+            <div className="fixed top-4 right-4 z-50">
+                <Link href="/web">
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg"
+                    >
+                        <Globe className="w-5 h-5 text-white" />
+                    </motion.button>
+                </Link>
+            </div>
+
             {/* App Grid */}
             <div className="flex-1 relative overflow-hidden" ref={constraintsRef}>
                 <motion.div
@@ -159,7 +175,7 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                     dragConstraints={constraintsRef}
                     onDragStart={() => setIsDragging(true)}
                     onDragEnd={handleDragEnd}
-                    animate={{ x: -currentPage * ( globalThis.window === undefined ? 375 : window.innerWidth) }}
+                    animate={{ x: -currentPage * (globalThis.window === undefined ? 375 : window.innerWidth) }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     style={{ width: `${paginationData.totalPages * 100}%` }}
                 >
@@ -167,7 +183,7 @@ export default function MobileLauncher({ onAppOpen }: Readonly<MobileLauncherPro
                         const pageKey = pageApps.map(app => app.id).join('-');
                         return (
                             <div
-                                key={pageKey} 
+                                key={pageKey}
                                 className="shrink-0 w-full px-6"
                                 style={{ width: `${100 / paginationData.totalPages}%` }}
                             >

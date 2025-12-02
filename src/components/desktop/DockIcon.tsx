@@ -98,7 +98,7 @@ export default function DockIcon({ app, isActive, onClick, onContextMenu }: Read
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-white text-xs font-medium drop-shadow-lg px-2 py-0.5 rounded bg-black/20 backdrop-blur-sm"
+        className="text-white text-xs font-medium drop-shadow-lg px-2 py-0.5 rounded bg-black/20 backdrop-blur-sm max-w-20 truncate text-center"
       >
         {app.name}
       </motion.span>

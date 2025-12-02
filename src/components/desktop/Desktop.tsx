@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDesktopStore } from '@/store/desktopStore';
 import { DOCK_APPS } from '@/utils/constants';
@@ -22,23 +22,9 @@ export default function Desktop() {
     focusWindow,
     moveWindow,
     resizeWindow,
-    addNotification,
     currentTheme,
   } = useDesktopStore();
 
-  // Welcome notification
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      addNotification({
-        title: 'Welcome!',
-        message: 'Click on dock icons to explore my portfolio',
-        type: 'info',
-        duration: 5000,
-      });
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [addNotification]);
 
   // Memoize sorted visible windows to prevent unnecessary re-sorts
   const sortedVisibleWindows = useMemo(() =>
@@ -132,17 +118,32 @@ export default function Desktop() {
         {/* Notifications */}
         <Notifications />
 
-        {/* Hero Window*/}
-        <HeroWindow />
-        
         {/* Web View Toggle Button */}
         <Link href="/web">
           <motion.button
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              boxShadow: globalThis.window !== undefined && localStorage.getItem('portfolio-button-clicked') === null ? [
+                '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                '0 0 0 10px rgba(59, 130, 246, 0)',
+                '0 0 0 0 rgba(59, 130, 246, 0.7)',
+              ] : undefined
+            }}
+            transition={{
+              boxShadow: {
+                duration: 2,
+                repeat: globalThis.window !== undefined && localStorage.getItem('portfolio-button-clicked') === null ? Infinity : 0,
+                ease: 'easeInOut'
+              }
+            }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className={`fixed top-20 right-6 z-15000 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${currentTheme === 'dark'
+            onClick={() => {
+              localStorage.setItem('portfolio-button-clicked', 'true');
+            }}
+            className={`fixed top-6 right-6 z-15 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${currentTheme === 'dark'
                 ? 'bg-gray-800/90 hover:bg-gray-700/90 text-blue-400'
                 : 'bg-white/90 hover:bg-gray-50/90 text-blue-600'
               }`}
@@ -151,6 +152,10 @@ export default function Desktop() {
             <Globe className="w-5 h-5" />
           </motion.button>
         </Link>
+
+        {/* Hero Window*/}
+        <HeroWindow />
+
       </div>
     </main>
   );

@@ -29,7 +29,7 @@ export default function WebAbout() {
             year: '2024',
             title: 'Lab Intern',
             company: 'PAU VHCI Lab',
-            current: true,
+            current: false,
         },
         {
             year: '2020',

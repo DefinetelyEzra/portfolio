@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Heart } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { FaBriefcase, FaGithub, FaLinkedin } from 'react-icons/fa';
 import { useDesktopStore } from '@/store/desktopStore';
 
@@ -29,7 +29,7 @@ export default function WebFooter() {
                                 Odunayo Agunbiade
                             </h3>
                             <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                                Building the future, one line at a time
+                                Decision is where nature ends and consciousness begins
                             </p>
                         </div>
                     </div>
@@ -59,7 +59,7 @@ export default function WebFooter() {
                 {/* Copyright */}
                 <div className={`mt-8 pt-8 border-t text-center ${isDark ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-600'}`}>
                     <p className="flex items-center justify-center gap-2 text-sm">
-                        Made with <Heart className="w-4 h-4 text-red-500 fill-current" /> by Odunayo Agunbiade
+                        Made by Odunayo Agunbiade for Odunayo Agunbiade
                     </p>
                     <p className="text-xs mt-2">
                         © {new Date().getFullYear()} All rights reserved.
