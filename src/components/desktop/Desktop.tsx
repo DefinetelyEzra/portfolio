@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useDesktopStore } from '@/store/desktopStore';
 import { DOCK_APPS } from '@/utils/constants';
+import { Globe } from 'lucide-react';
+import Link from 'next/link';
 import Dock from './Dock';
 import Wallpaper from './Wallpaper';
 import Window from '../windows/Window';
@@ -21,6 +23,7 @@ export default function Desktop() {
     moveWindow,
     resizeWindow,
     addNotification,
+    currentTheme,
   } = useDesktopStore();
 
   // Welcome notification
@@ -130,7 +133,24 @@ export default function Desktop() {
         <Notifications />
 
         {/* Hero Window*/}
-        <HeroWindow/>
+        <HeroWindow />
+        
+        {/* Web View Toggle Button */}
+        <Link href="/web">
+          <motion.button
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className={`fixed top-20 right-6 z-15000 p-3 rounded-full shadow-xl backdrop-blur-sm transition-colors ${currentTheme === 'dark'
+                ? 'bg-gray-800/90 hover:bg-gray-700/90 text-blue-400'
+                : 'bg-white/90 hover:bg-gray-50/90 text-blue-600'
+              }`}
+            title="Switch to Web View"
+          >
+            <Globe className="w-5 h-5" />
+          </motion.button>
+        </Link>
       </div>
     </main>
   );

@@ -266,10 +266,20 @@ const KeyTechnologies = ({ isDark }: { isDark: boolean }) => (
 
 const Footer = ({ isDark, handleClose }: { isDark: boolean; handleClose: () => void }) => (
     <div className={`p-6 border-t shrink-0 ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
-        <div className="flex items-center justify-between">
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Click any section above to explore, or close to browse freely
-            </p>
+        <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Click any section above to explore
+                </p>
+                <a
+                    href="/web"
+                    className={`text-sm font-medium flex items-center gap-1 ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+                        }`}
+                >
+                    <Globe className="w-4 h-4" />
+                    View Web Version
+                </a>
+            </div>
             <button
                 onClick={handleClose}
                 className="px-6 py-2 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all"
