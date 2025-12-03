@@ -116,10 +116,9 @@ The app automatically detects mobile/desktop views based on screen size (breakpo
 │   ├── components/         # Reusable UI components
 │   │   ├── apps/           # Portfolio apps (About, Contact, Projects, etc.)
 │   │   ├── desktop/        # Desktop-specific (Dock, Widgets, Windows)
-│   │   ├── mobile/         # Mobile-specific (Launcher, Apps, Widgets)
 │   │   ├── ui/             # Shared UI (AudioProvider, BootScreen)
 │   │   └── windows/        # Window management components
-│   ├── hooks/              # Custom hooks (useDesktop, useWindowManager, etc.)
+│   ├── hooks/              # Custom hooks ( useWindowManager, etc.)
 │   ├── store/              # Zustand stores for state
 │   ├── types/              # TypeScript types
 │   └── utils/              # Utilities (constants, device detection, etc.)
