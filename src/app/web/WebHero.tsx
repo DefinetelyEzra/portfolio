@@ -12,30 +12,37 @@ export default function WebHero() {
     const heroRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Smooth mouse tracking
+    // Smooth mouse/orientation tracking
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
     const smoothMouseX = useSpring(mouseX, { stiffness: 50, damping: 20 });
     const smoothMouseY = useSpring(mouseY, { stiffness: 50, damping: 20 });
 
-    // Parallax transforms - use state dimensions
-    const rotateX = useTransform(smoothMouseY, [0, dimensions.height || 1], [20, -20]);
-    const rotateY = useTransform(smoothMouseX, [0, dimensions.width || 1], [-20, 20]);
+    // Parallax transforms
+    const rotateX = useTransform(smoothMouseY, [0, dimensions.height || 1], [40, -40]);
+    const rotateY = useTransform(smoothMouseX, [0, dimensions.width || 1], [-40, 40]);
 
-    // Set dimensions on mount
+    // Set dimensions and detect mobile on mount
     useEffect(() => {
         if (globalThis.window !== undefined) {
+            const checkMobile = () => {
+                setIsMobile(globalThis.window.innerWidth < 768);
+            };
+
             setDimensions({
                 width: globalThis.window.innerWidth,
                 height: globalThis.window.innerHeight,
             });
+            checkMobile();
 
             const handleResize = () => {
                 setDimensions({
                     width: globalThis.window.innerWidth,
                     height: globalThis.window.innerHeight,
                 });
+                checkMobile();
             };
 
             globalThis.window.addEventListener('resize', handleResize);
@@ -43,16 +50,64 @@ export default function WebHero() {
         }
     }, []);
 
+    // Handle mouse movement for desktop
     useEffect(() => {
         setMounted(true);
-        const handleMouseMove = (e: MouseEvent) => {
-            mouseX.set(e.clientX);
-            mouseY.set(e.clientY);
-        };
 
-        globalThis.window.addEventListener('mousemove', handleMouseMove);
-        return () => globalThis.window.removeEventListener('mousemove', handleMouseMove);
-    }, [mouseX, mouseY]);
+        if (!isMobile && globalThis.window !== undefined) {
+            const handleMouseMove = (e: MouseEvent) => {
+                mouseX.set(e.clientX);
+                mouseY.set(e.clientY);
+            };
+
+            globalThis.window.addEventListener('mousemove', handleMouseMove);
+            return () => globalThis.window.removeEventListener('mousemove', handleMouseMove);
+        }
+    }, [mouseX, mouseY, isMobile]);
+
+    // Handle device orientation for mobile
+    useEffect(() => {
+        if (isMobile && globalThis.window !== undefined) {
+            const handleOrientation = (event: DeviceOrientationEvent) => {
+                if (event.beta !== null && event.gamma !== null) {
+                    // beta: front-to-back tilt (-180 to 180)
+                    // gamma: left-to-right tilt (-90 to 90)
+
+                    // Normalize beta to 0-height range
+                    // When phone is upright: beta ≈ 90
+                    // Tilt forward: beta decreases
+                    // Tilt backward: beta increases
+                    const normalizedBeta = ((event.beta - 45) / 90) * dimensions.height;
+
+                    // Normalize gamma to 0-width range
+                    // Tilt left: gamma negative
+                    // Tilt right: gamma positive
+                    const normalizedGamma = ((event.gamma + 45) / 90) * dimensions.width;
+
+                    mouseX.set(normalizedGamma);
+                    mouseY.set(normalizedBeta);
+                }
+            };
+
+            // Request permission for iOS 13+
+            if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+                (DeviceOrientationEvent as any).requestPermission()
+                    .then((response: string) => {
+                        if (response === 'granted') {
+                            globalThis.window.addEventListener('deviceorientation', handleOrientation);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // For non-iOS devices or older iOS
+                globalThis.window.addEventListener('deviceorientation', handleOrientation);
+            }
+
+            return () => {
+                globalThis.window.removeEventListener('deviceorientation', handleOrientation);
+            };
+        }
+    }, [isMobile, dimensions, mouseX, mouseY]);
 
     const scrollToAbout = () => {
         const aboutSection = document.getElementById('about');
@@ -257,7 +312,7 @@ export default function WebHero() {
                         />
                         <div className="relative flex items-center gap-2 text-sm font-medium">
                             <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                                Scroll to explore
+                                {isMobile ? 'Tilt your device to explore' : 'Scroll to explore'}
                             </span>
                             <motion.div
                                 animate={{ y: [0, 8, 0] }}
