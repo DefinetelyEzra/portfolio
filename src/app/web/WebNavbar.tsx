@@ -107,9 +107,6 @@ export default function WebNavbar({ activeSection }: WebNavbarProps) {
                             <div className="w-10 h-10 bg-linear-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-lg flex items-center justify-center shrink-0">
                                 <span className="text-white text-lg font-bold">OA</span>
                             </div>
-                            <span className={`font-bold text-base sm:text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                Odunayo Agunbiade
-                            </span>
                         </motion.div>
 
                         {/* Desktop Navigation - Hidden on mobile */}

@@ -23,33 +23,29 @@ export default function MagneticCursor() {
         const handleMouseMove = (e: MouseEvent) => {
             cursorX.set(e.clientX);
             cursorY.set(e.clientY);
-        };
 
-        const handleMouseEnter = (e: Event) => {
-            const target = e.target as HTMLElement;
-            if (
-                target.tagName === 'A' ||
-                target.tagName === 'BUTTON' ||
-                target.classList.contains('magnetic-element') ||
-                target.closest('a') ||
-                target.closest('button')
-            ) {
-                setIsHovering(true);
+            const target = e.target;
+            if (target instanceof HTMLElement) {
+                if (
+                    target.tagName === 'A' ||
+                    target.tagName === 'BUTTON' ||
+                    target.classList.contains('magnetic-element') ||
+                    target.closest('a') ||
+                    target.closest('button')
+                ) {
+                    setIsHovering(true);
+                } else {
+                    setIsHovering(false);
+                }
+            } else {
+                setIsHovering(false);
             }
         };
 
-        const handleMouseLeave = () => {
-            setIsHovering(false);
-        };
-
         globalThis.window.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseenter', handleMouseEnter, true);
-        document.addEventListener('mouseleave', handleMouseLeave, true);
 
         return () => {
             globalThis.window.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseenter', handleMouseEnter, true);
-            document.removeEventListener('mouseleave', handleMouseLeave, true);
         };
     }, [cursorX, cursorY]);
 
@@ -78,24 +74,24 @@ export default function MagneticCursor() {
                 />
             </motion.div>
 
-      {/* Inner dot */}
-<motion.div
-    className="fixed pointer-events-none z-9999 mix-blend-difference"
-    style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
-        translateX: '-50%',
-        translateY: '-50%',
-    }}
->
-    <motion.div
-        className="w-4 h-4 bg-blue-500 rounded-full"  // Changed from w-2 h-2 bg-white
-        animate={{
-            scale: isHovering ? 0 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-    />
-</motion.div>
+            {/* Inner dot */}
+            <motion.div
+                className="fixed pointer-events-none z-9999 mix-blend-difference"
+                style={{
+                    x: cursorXSpring,
+                    y: cursorYSpring,
+                    translateX: '-50%',
+                    translateY: '-50%',
+                }}
+            >
+                <motion.div
+                    className="w-4 h-4 bg-blue-500 rounded-full"
+                    animate={{
+                        scale: isHovering ? 0 : 1,
+                    }}
+                    transition={{ duration: 0.2 }}
+                />
+            </motion.div>
         </>
     );
 }

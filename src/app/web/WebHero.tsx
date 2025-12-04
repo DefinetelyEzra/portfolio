@@ -11,6 +11,7 @@ export default function WebHero() {
     const isDark = currentTheme === 'dark';
     const heroRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [mounted, setMounted] = useState(false);
 
     // Smooth mouse tracking
     const mouseX = useMotionValue(0);
@@ -43,6 +44,7 @@ export default function WebHero() {
     }, []);
 
     useEffect(() => {
+        setMounted(true);
         const handleMouseMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
@@ -89,7 +91,7 @@ export default function WebHero() {
                 />
 
                 {/* Floating particles */}
-                {particleKeys.map((key, i) => (
+                {mounted && particleKeys.map((key, i) => (
                     <motion.div
                         key={key}
                         className={`absolute w-2 h-2 rounded-full ${isDark ? 'bg-blue-400/30' : 'bg-purple-400/30'
@@ -170,7 +172,7 @@ export default function WebHero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-6 text-reveal overflow-visible ${isDark ? 'text-white' : 'text-gray-900'}`} 
+                        className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-6 text-reveal overflow-visible ${isDark ? 'text-white' : 'text-gray-900'}`}
                     >
                         <span className="inline-block">
                             <motion.span
