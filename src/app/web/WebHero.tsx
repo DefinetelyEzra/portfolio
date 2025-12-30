@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowDown, Mail, Sparkles } from 'lucide-react';
+import { ArrowDown, Mail } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { useDesktopStore } from '@/store/desktopStore';
 import { useEffect, useRef, useState } from 'react';
@@ -217,7 +217,6 @@ export default function WebHero() {
                                     repeat: Infinity,
                                 }}
                             >
-                                <Sparkles className="w-6 h-6 text-yellow-400" />
                             </motion.div>
                         </div>
                     </motion.div>

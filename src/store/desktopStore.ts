@@ -280,7 +280,7 @@ export const useDesktopStore = create<DesktopStore>()(
             setWallpaper: (wallpaper: string) => {
                 set((state) => {
                     // Validate wallpaper exists in collection
-                    const wallpaperExists = ALL_WALLPAPERS.some(w => w.path === wallpaper || w.url === wallpaper);
+                    const wallpaperExists = ALL_WALLPAPERS.some(w => w.path === wallpaper);
                     const finalWallpaper = wallpaperExists ? wallpaper : ALL_WALLPAPERS[0]?.path || '/wallpapers/default.jpg';
 
                     const shouldAddToHistory = state.settings.wallpaper !== finalWallpaper;

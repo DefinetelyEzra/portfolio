@@ -2,7 +2,7 @@
 
 import { motion, useInView, useMotionValue, useTransform } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { ExternalLink, Eye, Sparkles } from 'lucide-react';
+import { ExternalLink, Eye } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { useDesktopStore } from '@/store/desktopStore';
 
@@ -92,7 +92,6 @@ export default function WebProjects() {
                             transition={{ duration: 0.5 }}
                             className="inline-flex items-center gap-2 mb-4"
                         >
-                            <Sparkles className="w-6 h-6 text-purple-500" />
                             <span className={`text-sm font-semibold uppercase tracking-wider ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
                                 My Work
                             </span>

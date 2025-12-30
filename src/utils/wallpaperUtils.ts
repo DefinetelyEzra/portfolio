@@ -1,7 +1,7 @@
 export interface WallpaperData {
   id: string;
   name: string;
-  type: 'static' | 'gradient' | 'animated';
+  type: 'static' | 'animated';
   path: string;
   url?: string; // backward compatibility 
   preview?: string;
@@ -75,38 +75,19 @@ export const WALLPAPER_COLLECTION: WallpaperData[] = [
   },
 ];
 
-// Gradient wallpapers
-export const GRADIENT_WALLPAPERS = [
+// Animated wallpapers
+export const ANIMATED_WALLPAPERS: WallpaperData[] = [
   {
-    id: 'gradient-purple',
-    name: 'Purple Gradient',
-    type: 'gradient' as const,
-    path: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    id: 'breathing-colors',
+    name: 'Breathing Colors',
+    type: 'animated' as const,
+    path: 'breathing-colors',
     category: 'abstract' as const,
-    device: 'desktop' as const,
-  },
-  {
-    id: 'gradient-ocean',
-    name: 'Ocean Gradient',
-    type: 'gradient' as const,
-    path: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
-    url: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
-    category: 'abstract' as const,
-    device: 'desktop' as const,
-  },
-  {
-    id: 'gradient-sunset',
-    name: 'Sunset Gradient',
-    type: 'gradient' as const,
-    path: 'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)',
-    url: 'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)',
-    category: 'abstract' as const,
-    device: 'desktop' as const,
+    device: 'all' as const,
   },
 ];
 
-export const ALL_WALLPAPERS = [...WALLPAPER_COLLECTION, ...GRADIENT_WALLPAPERS];
+export const ALL_WALLPAPERS = [...WALLPAPER_COLLECTION, ...ANIMATED_WALLPAPERS];
 
 export const getWallpapersForDevice = (isMobile: boolean): WallpaperData[] => {
   return ALL_WALLPAPERS.filter(wallpaper => !wallpaper.device || wallpaper.device === 'all' || wallpaper.device === (isMobile ? 'mobile' : 'desktop'));

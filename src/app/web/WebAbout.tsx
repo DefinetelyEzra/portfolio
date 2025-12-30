@@ -2,7 +2,7 @@
 
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import { Calendar, MapPin, Trophy, Target, TrendingUp, Code, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Target, TrendingUp, Code } from 'lucide-react';
 import { useDesktopStore } from '@/store/desktopStore';
 
 const stats = [
@@ -50,7 +50,6 @@ function Header({ isInView, isDark }: Readonly<HeaderProps>) {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2 mb-4"
             >
-                <Sparkles className="w-6 h-6 text-blue-500" />
                 <span className={`text-sm font-semibold uppercase tracking-wider ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
                     Get to know me
                 </span>

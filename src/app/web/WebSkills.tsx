@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Code, Database, Cloud, Globe, Cpu, BarChart, Sparkles } from 'lucide-react';
+import { Code, Database, Cloud, Globe, Cpu, BarChart } from 'lucide-react';
 import { useDesktopStore } from '@/store/desktopStore';
 
 interface Skill {
@@ -200,7 +200,6 @@ export default function WebSkills() {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2 mb-4"
             >
-                <Sparkles className="w-6 h-6 text-green-500" />
                 <span className={`text-sm font-semibold uppercase tracking-wider ${isDark ? 'text-green-400' : 'text-green-600'}`}>
                     What I Know
                 </span>

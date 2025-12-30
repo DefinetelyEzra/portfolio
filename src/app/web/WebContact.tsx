@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useState, useRef } from 'react';
-import { Mail, Phone, MapPin, Calendar, Send, CheckCircle, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Send, CheckCircle } from 'lucide-react';
 import { FaBriefcase, FaGithub, FaLinkedinIn } from 'react-icons/fa';
 import { useDesktopStore } from '@/store/desktopStore';
 
@@ -304,7 +304,6 @@ export default function WebContact() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 mb-4"
             >
-              <Sparkles className="w-6 h-6 text-pink-500" />
               <span className={`text-sm font-semibold uppercase tracking-wider ${isDark ? 'text-pink-400' : 'text-pink-600'}`}>
                 Let's Connect
               </span>

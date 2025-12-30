@@ -78,15 +78,3 @@ export interface WindowProps {
   onFocus: () => void;
   currentTheme?: 'light' | 'dark';
 }
-
-export type WallpaperType = 'static' | 'gradient' | 'animated' | 'particles';
-
-export interface WallpaperData {
-  id: string;
-  name: string;
-  type: 'static' | 'gradient' | 'animated';
-  path: string;
-  url?: string;
-  preview?: string;
-  category?: 'nature' | 'abstract' | 'minimal' | 'space';
-}

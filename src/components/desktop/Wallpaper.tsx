@@ -4,6 +4,7 @@ import { useDesktopStore } from '@/store/desktopStore';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ALL_WALLPAPERS, getNextWallpaper, type WallpaperData } from '@/utils/wallpaperUtils';
 import { Play, Pause, SkipForward, SkipBack, Shuffle } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 const CYCLE_INTERVALS = {
   slow: 600000,    // 10 minutes
@@ -21,6 +22,12 @@ const ControlIcons = {
   SkipBack,
   Shuffle
 };
+
+// Lazy load the animated wallpaper component
+const BreathingColors = dynamic(() => import('./wallpapers/BreathingColors'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 -z-10 bg-linear-to-br from-purple-900 to-blue-900" />
+});
 
 export default function Wallpaper() {
   const { settings, updateSettings } = useDesktopStore();
@@ -55,10 +62,8 @@ export default function Wallpaper() {
     const wallpaper = ALL_WALLPAPERS.find(w => w.path === settings.wallpaper) || currentWallpaper;
 
     switch (wallpaper.type) {
-      case 'gradient':
-        return { background: wallpaper.path };
       case 'animated':
-        return { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
+        return {};
       case 'static':
       default:
         return {
@@ -146,13 +151,22 @@ export default function Wallpaper() {
 
   return (
     <>
-      {/* Main wallpaper */}
-      <div
-        className={`fixed inset-0 -z-10 transition-opacity duration-300 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
-        style={getWallpaperStyle}
-      >
-        <div className="absolute inset-0 bg-black/5" />
-      </div>
+      {/* Animated wallpaper components */}
+      {currentWallpaper?.type === 'animated' && (
+        <>
+          {currentWallpaper.path === 'breathing-colors' && <BreathingColors />}
+        </>
+      )}
+
+      {/* Static/Gradient wallpaper */}
+      {currentWallpaper?.type !== 'animated' && getWallpaperStyle && (
+        <div
+          className={`fixed inset-0 -z-10 transition-opacity duration-300 ${isTransitioning ? 'opacity-90' : 'opacity-100'}`}
+          style={getWallpaperStyle}
+        >
+          <div className="absolute inset-0 bg-black/5" />
+        </div>
+      )}
 
       {/* Control panel */}
       <div
