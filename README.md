@@ -1,6 +1,5 @@
 # macOS Portfolio
-# Agunbiade Odunayo
-# 22120613109
+**Agunbiade Odunayo** | **22120613109**
 
 A modern, interactive portfolio website inspired by macOS, featuring a desktop-like interface with dock, resizable windows, widgets, and responsive mobile support. Built with Next.js and React, it showcases personal information, projects, skills, and includes fun elements like mini-games and customizable settings.
 
