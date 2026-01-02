@@ -1,4 +1,6 @@
 # macOS Portfolio
+# Agunbiade Odunayo
+# 22120613109
 
 A modern, interactive portfolio website inspired by macOS, featuring a desktop-like interface with dock, resizable windows, widgets, and responsive mobile support. Built with Next.js and React, it showcases personal information, projects, skills, and includes fun elements like mini-games and customizable settings.
 
@@ -115,7 +117,7 @@ The app automatically detects mobile/desktop views based on screen size (breakpo
 │   │   └── page.tsx        # Main entry point with boot screen and view switching
 │   ├── components/         # Reusable UI components
 │   │   ├── apps/           # Portfolio apps (About, Contact, Projects, etc.)
-│   │   ├── desktop/        # Desktop-specific (Dock, Widgets, Windows)
+│   │   ├── desktop/        # Desktop-specific (Dock, Widgets, Windows, Wallpapers)
 │   │   ├── ui/             # Shared UI (AudioProvider, BootScreen)
 │   │   └── windows/        # Window management components
 │   ├── hooks/              # Custom hooks ( useWindowManager, etc.)
